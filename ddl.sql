@@ -12,3 +12,27 @@ CREATE TABLE Staff(
     position VARCHAR(20) NOT NULL,
     name VARCHAR(20) NOT NULL
 );
+CREATE TABLE Menu(
+
+);
+CREATE TABLE MenuItem(
+
+);
+CREATE TABLE OrderItem(
+
+);
+CREATE TABLE Order(
+
+);
+CREATE TABLE Customer(
+
+);
+CREATE TABLE Delivery(
+
+);
+CREATE TABLE Courier(
+
+);
+CREATE TABLE MenuContains(
+
+);
