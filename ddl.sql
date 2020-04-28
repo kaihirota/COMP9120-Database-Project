@@ -62,8 +62,12 @@ CREATE TABLE OrderItem(
     customerId INTEGER,
     quantity INTEGER,
     charge FLOAT,
+    -- menuId INTEGER,
+    -- menuItemId INTEGER,
     CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId) REFERENCES Order
     CONSTRAINT FK_customerId_OrderItem FOREIGN KEY (customerId) REFERENCES Customer
+    -- CONSTRAINT FK_menuId_OrderItem FOREIGN KEY (menuId) REFERENCES Menu
+    -- CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem
 );
 CREATE TABLE Order(
     orderId INTEGER PRIMARY KEY,
