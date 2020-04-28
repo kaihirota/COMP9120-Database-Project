@@ -57,10 +57,24 @@ CREATE TABLE MenuContains(
     CONSTRAINT FK_menuItemId_MenuContains FOREIGN KEY (menuItemId) REFERENCES MenuItem
 );
 CREATE TABLE OrderItem(
-
+    orderItemId INTEGER PRIMARY KEY,
+    orderId INTEGER,
+    customerId INTEGER,
+    quantity INTEGER,
+    charge FLOAT,
+    CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId) REFERENCES Order
+    CONSTRAINT FK_customerId_OrderItem FOREIGN KEY (customerId) REFERENCES Customer
 );
 CREATE TABLE Order(
-
+    orderId INTEGER PRIMARY KEY,
+    customerId INTEGER,
+    staffId INTEGER,
+    deliveryId INTEGER,
+    datetime TIMESTAMP,
+    totalCharge FLOAT,
+    CONSTRAINT FK_customerId_Order FOREIGN KEY (customerId) REFERENCES Customer
+    CONSTRAINT FK_staffId_Order FOREIGN KEY (staffId) REFERENCES Staff
+    CONSTRAINT FK_deliveryId_Order FOREIGN KEY (deliveryId) REFERENCES Delivery
 );
 CREATE TABLE Customer(
     customerId INTEGER PRIMARY KEY,
@@ -70,7 +84,11 @@ CREATE TABLE Customer(
     address VARCHAR(100)
 );
 CREATE TABLE Delivery(
-
+    deliveryId INTEGER PRIMARY KEY,
+    timeReady TIMESTAMP,
+    timeDelivered TIMESTAMP,
+    courierId INTEGER FOREIGN KEY,
+    CONSTRAINT FK_courierId_Delivery FOREIGN KEY (courierId) REFERENCES Courier
 );
 CREATE TABLE Courier(
     courierId INTEGER PRIMARY KEY,
