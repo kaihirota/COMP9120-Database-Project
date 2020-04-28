@@ -12,16 +12,3 @@ def test_connection():
         print('connection failed')
     else:
         return conn
-
-
-conn = test_connection()
-cursor = conn.cursor()
-sql = """
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = 'public'
-"""
-
-cursor.execute(sql)
-for table in cursor.fetchall():
-    print(table)
