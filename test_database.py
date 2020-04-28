@@ -6,4 +6,9 @@ with open(f'SQL_CREDENTIALS.json') as creds_file:
 
 
 def test_connection():
-    connect(database='comp9120_a2', **sql_creds)
+    conn = connect(database='comp9120_a2', **sql_creds)
+
+    if not conn:
+        print('connection failed')
+    else:
+        return conn
