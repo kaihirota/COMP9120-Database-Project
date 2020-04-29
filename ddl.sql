@@ -1,3 +1,7 @@
+-- 1. Fields in a tuple related to dates and times should always have values.
+-- 2. All fields in a tuple relating to details about a name (eg: Menu Item Name, First Name, etc) should always have a value.
+-- 4. Customers must have a specified mobile number.
+
 CREATE TABLE Staff(
     staffid INTEGER PRIMARY KEY,
     position VARCHAR(20),
@@ -12,31 +16,31 @@ CREATE TABLE MenuItem(
     name VARCHAR(20) NOT NULL,
     price FLOAT NOT NULL,
     description VARCHAR(100),
-    itemType VARCHAR(10) NOT NULL,
-    CONSTRAINT CK_itemType_MenuItem CHECK(itemType IN ('Main', 'Side', 'Dessert'))
+    isA VARCHAR(10) NOT NULL,
+    CONSTRAINT CK_isA_MenuItem CHECK(isA IN ('Main', 'Side', 'Dessert'))
 );
 CREATE TABLE Customer(
     customerId INTEGER PRIMARY KEY,
     firstName VARCHAR(30) NOT NULL,
     lastName VARCHAR(30) NOT NULL,
-    address VARCHAR(100) NOT NULL,
-    mobileNumber VARCHAR(10) NOT NULL
+    address VARCHAR(100),
+    mobileNo CHAR(10) NOT NULL
 );
 CREATE TABLE Courier(
     courierId INTEGER PRIMARY KEY,
     name VARCHAR(20) NOT NULL,
-    address VARCHAR(100), -- NOT NULL?
-    mobileNumber VARCHAR(10) -- NOT NULL?
+    address VARCHAR(100),
+    mobile CHAR(10)
 );
 CREATE TABLE Delivery(
     deliveryId INTEGER PRIMARY KEY,
     courierId INTEGER NOT NULL,
-    timeReady TIMESTAMP NOT NULL,
-    timeDelivered TIMESTAMP NOT NULL, -- Not null? where will data be before delivery is complete?
+    timeReady TIMESTAMP,
+    timeDelivered TIMESTAMP, -- Not null? where will data be before delivery is complete?
     CONSTRAINT FK_courierId_Delivery FOREIGN KEY (courierId) REFERENCES Courier,
     CONSTRAINT CK_timeConflict_Delivery CHECK(timeReady < timeDelivered)
 );
-CREATE TABLE MenuContains(
+CREATE TABLE Contains(
     menuId INTEGER,
     menuItemId INTEGER,
     PRIMARY KEY (menuId, menuItemId),
@@ -49,7 +53,7 @@ CREATE TABLE "Order"(
     staffId INTEGER NOT NULL,
     deliveryId INTEGER NOT NULL,
     -- using reserved words like DATETIME to name columns is bad practice
-    dt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     totalCharge FLOAT NOT NULL,
     CONSTRAINT FK_customerId_Order FOREIGN KEY (customerId) REFERENCES Customer ON DELETE CASCADE,
     CONSTRAINT FK_staffId_Order FOREIGN KEY (staffId) REFERENCES Staff, -- ON DELETE CASCADE?
