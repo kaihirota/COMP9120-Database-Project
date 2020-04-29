@@ -34,7 +34,7 @@ CREATE TABLE Customer(
     customerId INTEGER PRIMARY KEY,
     firstName VARCHAR(30) NOT NULL,
     lastName VARCHAR(30) NOT NULL,
-    address VARCHAR(100),
+    address VARCHAR(100) NOT NULL,
     mobileNo CHAR(10) NOT NULL
 );
 CREATE TABLE Courier(
@@ -74,8 +74,8 @@ CREATE TABLE "Order"(
 CREATE TABLE OrderItem(
     orderItemId INTEGER PRIMARY KEY,
     orderId INTEGER NOT NULL,
-    customerId INTEGER NOT NULL,
     menuItemId INTEGER NOT NULL,
+    customerId INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
     charge NUMERIC(10, 2) NOT NULL,
     CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId) REFERENCES "Order" ON DELETE CASCADE,
@@ -100,4 +100,4 @@ $menuTotalParticipation$ LANGUAGE plpgsql;
 -- triggers
 CREATE TRIGGER MenuContainsTotalParticipation
     AFTER INSERT OR UPDATE OR DELETE ON Contains
-    FOR EACH ROW EXECUTE PROCEDURE menuTotalParticipation();
+    FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
