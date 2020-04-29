@@ -100,6 +100,7 @@ class Test_db_constraints:
 
     def dbget_table(self, table):
         return self.dbexec(f'select * from {table}', f'get table {table}')
+
     def run_multiple_inserts(self, table, columns, value_error_pairs):
         for vals, err in value_error_pairs:
             if err is None:
@@ -161,8 +162,6 @@ class Test_db_constraints:
             # test name and price not unique
             ((0, 'name', 10, 'desc', 'Main'), None),
             ((1, 'name', 10, 'desc', 'Main'), None),
-            # test name is string
-            ((2, False, 10, 'desc', 'Main'), None),
             # test name length
             ((3, 'a' * 30, 10, 'desc', 'Main'), None),
             ((4, 'a' * 400, 10, 'desc', 'Main'), Exception),
@@ -183,8 +182,6 @@ class Test_db_constraints:
 
             # test description can be null
             ((5, 'name', 10, 'desc', 'Main'), None),
-            # test description is string
-            ((6, 'name', 10, False, 'Main'), None),
 
             # test isa is one of ('Main', 'Side', 'Dessert')
             ((7, 'name', 10, 'desc', 'Main'), None),
@@ -222,19 +219,26 @@ class Test_db_constraints:
             # test firstname and lastname not null
             ((3, '0488888888', None, 'smith', '3 street street'), Exception),
             ((3, '0488888888', 'john', None, '3 street street'), Exception),
-            # test firstname and lastname are strings
-            ((3, '0488888888', False, 'smith', '3 street street'), Exception),
-            ((3, '0488888888', 'john', False, '3 street street'), Exception),
 
             # test address can be null
             ((3, '0488888888', 'john', 'smith', None), None),
-            # test address is string
-            ((4, '0488888888', 'john', 'smith', False), None),
         ]
         self.run_multiple_inserts('Customer', columns, values)
 
-# Not sure why this works here and not in a test.
-# tdb = Test_db_constraints()
-# tdb.setup_method()
-# tdb.dbinsert('courier', None, ('53', 'name', 'address', '048756654'))
-# tdb.teardown_method()
+    def test_staff(self):
+        columns = 'StaffId', 'Position', 'Name'
+        values = [
+            ((0, 'pos', 'name'), None),
+
+            # staffid is unique
+            ((0, 'pos', 'name'), Exception),
+            # staffid is not null
+            ((None, 'pos', 'name'), Exception),
+
+            # position can be null
+            ((1, None, 'name'), None),
+
+            # name is not null
+            ((2, 'pos', None), Exception),
+        ]
+        self.run_multiple_inserts('Staff', columns, values)
