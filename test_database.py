@@ -110,7 +110,7 @@ class Test_db_constraints:
 
     def test_menu_insert(self):
         # TODO this test needs to be worked out. It is not really acceptable right now.
-        # must not allow a menu to be inserted before any menu items that are contained in that menu are inserted.
+        # must not allow a menu to be inserted before any menu items that are contained in that menu are inserted. (may change later)
         with pytest.raises(Exception):
             self.dbinsert('menu', ('MenuId', 'Description'), (0, 'desc'))
 
