@@ -100,6 +100,7 @@ class Test_db_constraints:
 
     def dbget_table(self, table):
         return self.dbexec(f'select * from {table}', f'get table {table}')
+
     def run_multiple_inserts(self, table, columns, value_error_pairs):
         for vals, err in value_error_pairs:
             if err is None:
