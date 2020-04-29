@@ -1,13 +1,21 @@
+# 1. Fields in a tuple related to dates and times should always have values.
+# 2. All fields in a tuple relating to details about a name (eg: Menu Item Name, First Name, etc)
+#    should always have a value.
+# 3. The total charge of an order, the quantity and charge for an order item, and the price for a
+#    menu item should always have values.
+# 4. Customers must have a specified mobile number.
+# 5. The TimeDelivered time/date should always be after TimeReady.
+
+
+# please use the same names as in the ER diagram for naming tables and attributes)
 import json
-import sys
 import re
 from psycopg2 import connect
-from psycopg2.extensions import connection as Connection
-from typing import List, Sequence, Generator
+from psycopg2.errors import UniqueViolation, NotNullViolation
+from typing import List, Sequence
 import pytest
 
 Value = str
-
 
 
 class Test_db_constraints:
@@ -60,7 +68,7 @@ class Test_db_constraints:
                 sql: str,
                 args: Sequence[str] = None,
                 msg: str = ''):
-        print(msg, 'starting...')
+        print(msg)
         rv = []
         with self.connection:
             with self.connection.cursor() as cur:
@@ -70,13 +78,30 @@ class Test_db_constraints:
         return rv
 
     def dbexec(self, sql: str, args: Sequence[str] = None, msg: str = ''):
-        print(msg, 'starting...')
+        print(msg)
         with self.connection:
             with self.connection.cursor() as cur:
                 cur.execute(sql, args)
 
+    def dbinsert(self, table, columns, values, msg=None):
+        if msg is None:
+            msg = 'insert row'
+        self.dbexec(self.create_insert_statement(table, columns, values),
+                    values,
+                    '(' + ','.join(map(repr, values)) + ') ' + msg)
+
+    def run_multiple_inserts(self, table, columns, value_error_pairs):
+        for vals, err in value_error_pairs:
+            if err is None:
+                self.dbinsert(table, columns, vals)
+            else:
+                with pytest.raises(err):
+                    self.dbinsert(table, columns, vals, msg='insert row, should fail')
+
+
+
     def test_insert_staff_correct(self):
-        values = ('31', 'manager', 'joe')
+        values = '31', 'manager', 'joe'
         qry = self.create_insert_statement('Staff',
                                            ('staffid', 'position', 'name'),
                                            values)
@@ -89,3 +114,17 @@ class Test_db_constraints:
                                            values)
         with pytest.raises(Exception):
             self.dbquery(qry, values, 'insert staff member incorrectly')
+
+    def test_insert_courier(self):
+        columns = 'CourierId', 'Name', 'Address', 'MobileNumber'
+        values = [
+            # values , error
+            (('1', 'abdul', '35 street street', '0487888888'), None),
+            (('1', 'james', '35 street street', '0485639676'), UniqueViolation),
+            (('2', 'abdul', '35 street street', '0475749507'), None),
+            (('3', None, '35 street street', '0475869403'), NotNullViolation),
+            (('3', 'null', '35 street street', 475869403), Exception)
+        ]
+        self.run_multiple_inserts('courier', columns, values)
+
+
