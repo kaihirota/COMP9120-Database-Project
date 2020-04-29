@@ -136,18 +136,93 @@ class Test_db_constraints:
         self.run_multiple_inserts('courier', columns, values)
 
     def test_menu_insert(self):
-        columns = 'MenuId', 'Description'
-        values = [
-            ((0, 'this is a short description'), None),
-            ((1, 'this is a longer description, it spans approx 100 characters. bla bla bla bla bla la bla bla bla bla'), None),
-            ((1, 'desc'), UniqueViolation),
-            ((2, None), None),  # should allow null descriptions
-        ]
+        # TODO this test needs to be worked out. It is not really acceptable right now.
+        # must not allow a menu to be inserted before any menu items that are contained in that menu are inserted.
+        with pytest.raises(Exception):
+            self.dbinsert('menu', ('MenuId', 'Description'), (0, 'desc'))
 
-    def test_menu_contains(self):
-        pass
+        # must have at least one menuitem first
+        menucolumns = 'MenuItemId', 'Name', 'Price', 'Description', 'IsA'
+        values = [
+            ((0, 'dish', 31.89, None, 'Main'), None),
+            ((1, 'dish', 37.21, 'description', 'Side'), None),
+            ((2, 'dish', 37.21, 'description', 'Dessert'), None),
+        ]
+        self.run_multiple_inserts('MenuItem', menucolumns, values)
+
+        # function so we can test that it works at least one way around
+        def insert_menus():
+            columns = 'MenuId', 'Description'
+            value_error_pairs = [
+                ((0, 'this is a short description'), None),
+                ((0, 'this is a short description'), Exception),
+                ((1, 'this is a longer description, it spans approx 100 characters. bla bla bla bla bla la bla bla bla bla'), None),
+                ((1, 'desc'), UniqueViolation),
+                ((2, None), None),  # should allow null descriptions
+            ]
+            self.run_multiple_inserts('menu', columns, value_error_pairs)
+
+        def insert_contains():
+            columns = 'MenuId', 'MenuItemId'
+            value_error_pairs = [
+                ((0, 0), None),
+                ((0, 0), Exception),
+                ((0, 5), Exception),
+                ((2, 0), None),
+                ((1, 0), None),
+            ]
+            self.run_multiple_inserts('Contains', columns, value_error_pairs)
+
+        try:
+            insert_menus()
+            insert_contains()
+        except Exception:
+            insert_contains()
+            insert_menus()
+
     def test_menuitem_insert(self):
-        pass
+        menucolumns = 'MenuItemId', 'Name', 'Price', 'Description', 'IsA'
+        values = [
+            # test name not null
+            ((0, None, 10, 'desc', 'Main'), NotNullViolation),
+            # test name and price not unique
+            ((0, 'name', 10, 'desc', 'Main'), None),
+            ((1, 'name', 10, 'desc', 'Main'), None),
+            # test name is string
+            ((2, False, 10, 'desc', 'Main'), None),
+            # test name length
+            ((3, 'a' * 30, 10, 'desc', 'Main'), None),
+            ((4, 'a' * 400, 10, 'desc', 'Main'), Exception),
+
+            # test id not null
+            ((None, 'name', 10, 'desc', 'Main'), NotNullViolation),
+            # test id is unique
+            ((4, 'name', 10, 'desc', 'Main'), UniqueViolation),
+
+            # test price not null
+            ((5, 'name', None, 'desc', 'Main'), NotNullViolation),
+            # test price is number
+            ((5, 'name', 'abc', 'desc', 'Main'), Exception),
+            # test price cant have .001 cents
+            ((5, 'name', 10.001, 'desc', 'Main'), Exception),
+            # test price can have cents
+            ((5, 'name', 10.30, 'desc', 'Main'), Exception),
+
+            # test description can be null
+            ((5, 'name', 10, 'desc', 'Main'), None),
+            # test description is string
+            ((6, 'name', 10, False, 'Main'), None),
+
+            # test isa is one of ('Main', 'Side', 'Dessert')
+            ((7, 'name', 10, 'desc', 'Main'), None),
+            ((8, 'name', 10, 'desc', 'Side'), None),
+            ((9, 'name', 10, 'desc', 'Dessert'), None),
+            ((10, 'name', 10, 'desc', 'main'), Exception),
+            ((10, 'name', 10, 'desc', 'side'), Exception),
+            ((10, 'name', 10, 'desc', 'dessert'), Exception),
+            ((10, 'name', 10, 'desc', 'otheritem'), Exception),
+        ]
+        self.run_multiple_inserts('MenuItem', menucolumns, values)
 
 
 # Not sure why this works here and not in a test.
