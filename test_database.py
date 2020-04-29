@@ -98,8 +98,6 @@ class Test_db_constraints:
                 with pytest.raises(err):
                     self.dbinsert(table, columns, vals, msg='insert row, should fail')
 
-
-
     def test_insert_staff_correct(self):
         values = '31', 'manager', 'joe'
         qry = self.create_insert_statement('Staff',
@@ -126,5 +124,3 @@ class Test_db_constraints:
             (('3', 'null', '35 street street', 475869403), Exception)
         ]
         self.run_multiple_inserts('courier', columns, values)
-
-
