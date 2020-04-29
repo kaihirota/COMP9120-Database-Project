@@ -281,6 +281,14 @@ class Test_db_constraints:
         columns = 'DeliveryId', 'TimeReady', 'TimeDelivered', 'CourierId'
         # will only pass if test_courier passes.
         self.test_courier()
+        # values in courier should be:
+        # 0, 'name', 'address', '4829574820'
+        # 1, 'name', 'address', '8' * 10
+        # 2, 'name', None, '8' * 10
+        # 3, 'name', 'address', '8' * 10
+        # 4, 'name', 'address', '8' * 10
+        # 5, 'name', 'address', '8' * 10
+        # 6, 'name', 'address', 'a' * 10
         values = [
             ((0, datetime(2020, 1, 1, 1, 1, 29), datetime(2020, 1, 1, 1, 2, 0), 0), None),
 
@@ -290,17 +298,17 @@ class Test_db_constraints:
             ((0, datetime(2020, 1, 1, 1, 1, 29), datetime(2020, 1, 1, 1, 2, 0), 0), UniqueViolation),
 
             # test timeready not null
-            ((0, None, datetime(2020, 1, 1, 1, 2, 0), 0), NotNullViolation),
+            ((1, None, datetime(2020, 1, 1, 1, 2, 0), 0), NotNullViolation),
             # test timeready is datetime
-            ((0, 'abc', datetime(2020, 1, 1, 1, 2, 0), 0), Exception),
+            ((1, 'abc', datetime(2020, 1, 1, 1, 2, 0), 0), Exception),
 
             # test timedelivered not null
-            ((0, datetime(2020, 1, 1, 1, 2, 0), None, 0), NotNullViolation),
+            ((1, datetime(2020, 1, 1, 1, 2, 0), None, 0), NotNullViolation),
             # test timedelivered is datetime
-            ((0, datetime(2020, 1, 1, 1, 2, 0), 'abc', 0), Exception),
+            ((1, datetime(2020, 1, 1, 1, 2, 0), 'abc', 0), Exception),
             # test timedelivered > timeready
-            ((0, datetime(2020, 1, 1, 1, 1, 29), datetime(2020, 1, 1, 1, 2, 0), 0), None),
+            ((1, datetime(2020, 1, 1, 1, 1, 29), datetime(2020, 1, 1, 1, 2, 0), 0), None),
             # test timedelivered not < timeready
-            ((0, datetime(2020, 1, 1, 1, 5, 29), datetime(2020, 1, 1, 1, 2, 0), 0), Exception),
+            ((2, datetime(2020, 1, 1, 1, 5, 29), datetime(2020, 1, 1, 1, 2, 0), 0), Exception),
         ]
         self.run_multiple_inserts('Staff', columns, values)
