@@ -108,7 +108,7 @@ class Test_db_constraints:
                 with pytest.raises(err):
                     self.dbinsert(table, columns, vals, msg='insert row, should fail')
 
-    def test_menu_insert(self):
+    def TODO_menu_insert(self):
         # TODO this test needs to be worked out. It is not really acceptable right now.
         # must not allow a menu to be inserted before any menu items that are contained in that menu are inserted. (may change later)
         with pytest.raises(Exception):
