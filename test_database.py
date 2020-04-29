@@ -224,6 +224,41 @@ class Test_db_constraints:
         ]
         self.run_multiple_inserts('MenuItem', menucolumns, values)
 
+    def test_customer(self):
+        columns = 'CustomerId', 'MobileNo', 'FirstName', 'LastName', 'Address'
+        values = [
+            ((0, '0488888888', 'john', 'smith', '3 street street'), None),
+
+            # test customerid unique
+            ((0, '0488888888', 'john', 'smith', '3 street street'), Exception),
+            # test customerid not null
+            ((None, '0488888888', 'john', 'smith', '3 street street'), Exception),
+
+            # test mobileno not unique
+            ((1, '0488888888', 'john', 'smith', '3 street street'), None),
+            # test mobileno not null
+            ((2, None, 'john', 'smith', '3 street street'), Exception),
+            # test mobileno is the right length
+            ((2, '4' * 11, 'john', 'smith', '3 street street'), Exception),
+            ((2, '4' * 9, 'john', 'smith', '3 street street'), Exception),
+            ((2, '4' * 10, 'john', 'smith', '3 street street'), None),
+            # test mobileno is a number
+            ((3, False, 'john', 'smith', '3 street street'), Exception),
+            ((3, 'a' * 10, 'john', 'smith', '3 street street'), Exception),
+
+            # test firstname and lastname not null
+            ((3, '0488888888', None, 'smith', '3 street street'), Exception),
+            ((3, '0488888888', 'john', None, '3 street street'), Exception),
+            # test firstname and lastname are strings
+            ((3, '0488888888', False, 'smith', '3 street street'), Exception),
+            ((3, '0488888888', 'john', False, '3 street street'), Exception),
+
+            # test address can be null
+            ((3, '0488888888', 'john', 'smith', None), None),
+            # test address is string
+            ((4, '0488888888', 'john', 'smith', False), None),
+        ]
+        self.run_multiple_inserts('Customer', columns, values)
 
 # Not sure why this works here and not in a test.
 # tdb = Test_db_constraints()
