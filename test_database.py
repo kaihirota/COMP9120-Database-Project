@@ -170,7 +170,7 @@ class Test_db_constraints:
             # test id not null
             ((None, 'name', 10, 'desc', 'Main'), NotNullViolation),
             # test id is unique
-            ((4, 'name', 10, 'desc', 'Main'), UniqueViolation),
+            ((3, 'name', 10, 'desc', 'Main'), UniqueViolation),
 
             # test price not null
             ((5, 'name', None, 'desc', 'Main'), NotNullViolation),
@@ -179,7 +179,7 @@ class Test_db_constraints:
             # test price cant have .001 cents
             ((5, 'name', 10.001, 'desc', 'Main'), Exception),
             # test price can have cents
-            ((5, 'name', 10.30, 'desc', 'Main'), Exception),
+            # ((5, 'name', 10.30, 'desc', 'Main'), Exception),
 
             # test description can be null
             ((5, 'name', 10, 'desc', 'Main'), None),

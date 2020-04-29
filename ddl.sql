@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS "Order" CASCADE;
 DROP TABLE IF EXISTS OrderItem CASCADE;
 
 CREATE TABLE Staff(
-    staffid INTEGER PRIMARY KEY,
+    staffId INTEGER PRIMARY KEY,
     position VARCHAR(20),
     name VARCHAR(30) NOT NULL
 );
@@ -24,8 +24,8 @@ CREATE TABLE Menu(
 );
 CREATE TABLE MenuItem(
     menuItemId INTEGER PRIMARY KEY,
-    name VARCHAR(20) NOT NULL,
-    price FLOAT NOT NULL,
+    name VARCHAR(30) NOT NULL,
+    price NUMERIC(2) NOT NULL,
     description VARCHAR(100),
     isA VARCHAR(10) NOT NULL,
     CONSTRAINT CK_isA_MenuItem CHECK(isA IN ('Main', 'Side', 'Dessert'))
@@ -77,7 +77,7 @@ CREATE TABLE OrderItem(
     customerId INTEGER NOT NULL,
     menuItemId INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
-    charge FLOAT NOT NULL,
+    charge NUMERIC(2) NOT NULL,
     CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId) REFERENCES "Order" ON DELETE CASCADE,
     CONSTRAINT FK_customerId_OrderItem FOREIGN KEY (customerId) REFERENCES Customer, -- ON DELETE CASCADE?
     CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem, -- ON DELETE CASCADE?
