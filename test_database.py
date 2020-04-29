@@ -14,6 +14,7 @@ from psycopg2 import connect
 from psycopg2.errors import UniqueViolation, NotNullViolation
 from typing import List, Sequence
 import pytest
+from datetime import datetime
 
 Value = str
 
@@ -240,5 +241,66 @@ class Test_db_constraints:
 
             # name is not null
             ((2, 'pos', None), Exception),
+        ]
+        self.run_multiple_inserts('Staff', columns, values)
+
+    def test_courier(self):
+        columns = 'CourierId', 'Name', 'Address', 'Mobile'
+        values = [
+            ((0, 'name', 'address', '4829574820'), None),
+
+            # test courierid is unique
+            ((0, 'name', 'address', '8' * 10), Exception),
+            # test courierid not null
+            ((None, 'name', 'address', '8' * 10), Exception),
+
+            # test name not null
+            ((1, None, 'address', '8' * 10), Exception),
+            # test name not unique
+            ((1, 'name', 'address', '8' * 10), None),
+
+            # test address can be null
+            ((2, 'name', None, '8' * 10), None),
+            # test address not unique
+            ((3, 'name', 'address', '8' * 10), None),
+
+            # test mobile not unique
+            ((4, 'name', 'address', '8' * 10), None),
+            # test mobile not null
+            ((5, 'name', 'address', None), Exception),
+            # test mobile is the right length
+            ((5, 'name', 'address', '8' * 9), Exception),
+            ((5, 'name', 'address', '8' * 11), Exception),
+            ((5, 'name', 'address', '8' * 10), None),
+            # test mobile is a number
+            ((6, 'name', 'address', 'a' * 10), None),
+        ]
+        self.run_multiple_inserts('Courier', columns, values)
+
+    def test_delivery(self):
+        columns = 'DeliveryId', 'TimeReady', 'TimeDelivered', 'CourierId'
+        # will only pass if test_courier passes.
+        self.test_courier()
+        values = [
+            ((0, datetime(2020, 1, 1, 1, 1, 29), datetime(2020, 1, 1, 1, 2, 0), 0), None),
+
+            # test deliveryid not null
+            ((None, datetime(2020, 1, 1, 1, 1, 29), datetime(2020, 1, 1, 1, 2, 0), 0), NotNullViolation),
+            # test deliveryid unique
+            ((0, datetime(2020, 1, 1, 1, 1, 29), datetime(2020, 1, 1, 1, 2, 0), 0), UniqueViolation),
+
+            # test timeready not null
+            ((0, None, datetime(2020, 1, 1, 1, 2, 0), 0), NotNullViolation),
+            # test timeready is datetime
+            ((0, 'abc', datetime(2020, 1, 1, 1, 2, 0), 0), Exception),
+
+            # test timedelivered not null
+            ((0, datetime(2020, 1, 1, 1, 2, 0), None, 0), NotNullViolation),
+            # test timedelivered is datetime
+            ((0, datetime(2020, 1, 1, 1, 2, 0), 'abc', 0), Exception),
+            # test timedelivered > timeready
+            ((0, datetime(2020, 1, 1, 1, 1, 29), datetime(2020, 1, 1, 1, 2, 0), 0), None),
+            # test timedelivered not < timeready
+            ((0, datetime(2020, 1, 1, 1, 5, 29), datetime(2020, 1, 1, 1, 2, 0), 0), Exception),
         ]
         self.run_multiple_inserts('Staff', columns, values)
