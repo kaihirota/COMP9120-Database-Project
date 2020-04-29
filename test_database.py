@@ -114,7 +114,7 @@ class Test_db_constraints:
             self.dbquery(qry, values, 'insert staff member incorrectly')
 
     def test_insert_courier(self):
-        columns = 'CourierId', 'Name', 'Address', 'MobileNumber'
+        columns = 'CourierId', 'Name', 'Address', 'Mobile'
         values = [
             # values , error
             (('1', 'abdul', '35 street street', '0487888888'), None),
