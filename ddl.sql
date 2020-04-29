@@ -35,8 +35,8 @@ CREATE TABLE Courier(
 CREATE TABLE Delivery(
     deliveryId INTEGER PRIMARY KEY,
     courierId INTEGER NOT NULL,
-    timeReady TIMESTAMP,
-    timeDelivered TIMESTAMP, -- Not null? where will data be before delivery is complete?
+    timeReady TIMESTAMP NOT NULL,
+    timeDelivered TIMESTAMP NOT NULL,
     CONSTRAINT FK_courierId_Delivery FOREIGN KEY (courierId) REFERENCES Courier,
     CONSTRAINT CK_timeConflict_Delivery CHECK(timeReady < timeDelivered)
 );
