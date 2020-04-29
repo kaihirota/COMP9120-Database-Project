@@ -108,33 +108,6 @@ class Test_db_constraints:
                 with pytest.raises(err):
                     self.dbinsert(table, columns, vals, msg='insert row, should fail')
 
-    def test_insert_staff_correct(self):
-        values = '31', 'manager', 'joe'
-        qry = self.create_insert_statement('Staff',
-                                           ('staffid', 'position', 'name'),
-                                           values)
-        self.dbexec(qry, values, 'insert staff member')
-
-    def test_insert_staff_incorrect(self):
-        values = ('31', 'manager', 'joe', 'briggs')
-        qry = self.create_insert_statement('Staff',
-                                           ('staffid', 'position', 'firstname', 'lastname'),
-                                           values)
-        with pytest.raises(Exception):
-            self.dbquery(qry, values, 'insert staff member incorrectly')
-
-    def test_insert_courier(self):
-        columns = 'CourierId', 'Name', 'Address', 'Mobile'
-        values = [
-            # values , error
-            (('1', 'abdul', '35 street street', '0487888888'), None),
-            (('1', 'james', '35 street street', '0485639676'), UniqueViolation),
-            (('2', 'abdul', '35 street street', '0475749507'), None),
-            (('3', None, '35 street street', '0475869403'), NotNullViolation),
-            (('3', 'null', '35 street street', 475869403), Exception)
-        ]
-        self.run_multiple_inserts('courier', columns, values)
-
     def test_menu_insert(self):
         # TODO this test needs to be worked out. It is not really acceptable right now.
         # must not allow a menu to be inserted before any menu items that are contained in that menu are inserted.
