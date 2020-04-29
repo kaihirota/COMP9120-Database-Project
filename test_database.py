@@ -69,6 +69,7 @@ class Test_db_constraints:
                               msg=f'select * from {table}:')
             for row in rv:
                 print(row)
+            self.dbexec(self.create_drop_statement(table))
         self.connection.close()
 
     def dbquery(self,
@@ -97,6 +98,8 @@ class Test_db_constraints:
                     values,
                     '(' + ','.join(map(repr, values)) + ') ' + msg)
 
+    def dbget_table(self, table):
+        return self.dbexec(f'select * from {table}', f'get table {table}')
     def run_multiple_inserts(self, table, columns, value_error_pairs):
         for vals, err in value_error_pairs:
             if err is None:
@@ -131,6 +134,20 @@ class Test_db_constraints:
             (('3', 'null', '35 street street', 475869403), Exception)
         ]
         self.run_multiple_inserts('courier', columns, values)
+
+    def test_menu_insert(self):
+        columns = 'MenuId', 'Description'
+        values = [
+            ((0, 'this is a short description'), None),
+            ((1, 'this is a longer description, it spans approx 100 characters. bla bla bla bla bla la bla bla bla bla'), None),
+            ((1, 'desc'), UniqueViolation),
+            ((2, None), None),  # should allow null descriptions
+        ]
+
+    def test_menu_contains(self):
+        pass
+    def test_menuitem_insert(self):
+        pass
 
 
 # Not sure why this works here and not in a test.
