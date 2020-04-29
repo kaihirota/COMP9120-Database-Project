@@ -2,14 +2,25 @@
 -- 2. All fields in a tuple relating to details about a name (eg: Menu Item Name, First Name, etc) should always have a value.
 -- 4. Customers must have a specified mobile number.
 
+DROP TABLE IF EXISTS Staff CASCADE;
+DROP TABLE IF EXISTS Menu CASCADE;
+DROP TABLE IF EXISTS MenuItem CASCADE;
+DROP TABLE IF EXISTS Customer CASCADE;
+DROP TABLE IF EXISTS Courier CASCADE;
+DROP TABLE IF EXISTS Delivery CASCADE;
+DROP TABLE IF EXISTS Contains CASCADE;
+DROP TABLE IF EXISTS "Order" CASCADE;
+DROP TABLE IF EXISTS OrderItem CASCADE;
+
 CREATE TABLE Staff(
     staffid INTEGER PRIMARY KEY,
     position VARCHAR(20),
-    name VARCHAR(20) NOT NULL
+    name VARCHAR(30) NOT NULL
 );
 CREATE TABLE Menu(
     menuId INTEGER PRIMARY KEY,
     description VARCHAR(100)
+    -- CONSTRAINT CK_totalParticipation_menu CHECK( EXISTS(SELECT menuId FROM Contains c WHERE menuId=c.menuId) ) DEFERRABLE INITIALLY DEFERRED
 );
 CREATE TABLE MenuItem(
     menuItemId INTEGER PRIMARY KEY,
@@ -28,7 +39,7 @@ CREATE TABLE Customer(
 );
 CREATE TABLE Courier(
     courierId INTEGER PRIMARY KEY,
-    name VARCHAR(20) NOT NULL,
+    name VARCHAR(30) NOT NULL,
     address VARCHAR(100),
     mobile CHAR(10)
 );
@@ -44,8 +55,8 @@ CREATE TABLE Contains(
     menuId INTEGER,
     menuItemId INTEGER,
     PRIMARY KEY (menuId, menuItemId),
-    CONSTRAINT FK_menuId_MenuContains FOREIGN KEY (menuId) REFERENCES Menu ON DELETE CASCADE,
-    CONSTRAINT FK_menuItemId_MenuContains FOREIGN KEY (menuItemId) REFERENCES MenuItem ON DELETE CASCADE
+    CONSTRAINT FK_menuId_Contains FOREIGN KEY (menuId) REFERENCES Menu ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    CONSTRAINT FK_menuItemId_Contains FOREIGN KEY (menuItemId) REFERENCES MenuItem ON DELETE CASCADE
 );
 CREATE TABLE "Order"(
     orderId INTEGER PRIMARY KEY,
@@ -74,3 +85,12 @@ CREATE TABLE OrderItem(
     -- add check - ensure order and order item matches
     -- what about item price and order match? check that too?
 );
+
+-- -- triggers
+-- CREATE TRIGGER MenuContainsTotalParticipation
+--     AFTER INSERT OR UPDATE ON Contains
+--     FOR EACH STATEMENT
+--     BEGIN
+--         DELETE FROM Menu
+--         WHERE menuId NOT IN (SELECT menuId FROM Contains);
+--     END;
