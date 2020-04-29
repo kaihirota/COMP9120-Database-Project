@@ -50,6 +50,7 @@ class Test_db_constraints:
         with open(f'SQL_CREDENTIALS.json') as creds_file:
             sql_creds = json.load(creds_file)
         self.connection = connect(database='comp9120_a2', **sql_creds)
+
         if not self.connection:
             raise RuntimeError(f'could not connect to db with creds {sql_creds}')
 
@@ -62,6 +63,12 @@ class Test_db_constraints:
         self.dbexec(ddl, msg='create all tables from ddl')
 
     def teardown_method(self):
+        self.connection.commit()
+        for table in self.tables:
+            rv = self.dbquery(f'select * from {table}',
+                              msg=f'select * from {table}:')
+            for row in rv:
+                print(row)
         self.connection.close()
 
     def dbquery(self,
@@ -124,3 +131,10 @@ class Test_db_constraints:
             (('3', 'null', '35 street street', 475869403), Exception)
         ]
         self.run_multiple_inserts('courier', columns, values)
+
+
+# Not sure why this works here and not in a test.
+# tdb = Test_db_constraints()
+# tdb.setup_method()
+# tdb.dbinsert('courier', None, ('53', 'name', 'address', '048756654'))
+# tdb.teardown_method()
