@@ -310,5 +310,8 @@ class Test_db_constraints:
             ((1, datetime(2020, 1, 1, 1, 1, 29), datetime(2020, 1, 1, 1, 2, 0), 0), None),
             # test timedelivered not < timeready
             ((2, datetime(2020, 1, 1, 1, 5, 29), datetime(2020, 1, 1, 1, 2, 0), 0), Exception),
+
+            # test courierid exists in courier
+            ((2, datetime(2020, 1, 1, 1, 5, 29), datetime(2020, 1, 1, 1, 2, 0), 10), Exception),
         ]
         self.run_multiple_inserts('Staff', columns, values)
