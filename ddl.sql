@@ -88,21 +88,9 @@ CREATE TABLE OrderItem(
 
 
 
--- when add menuitem should also classify this as a subclass to enforce full participation of IsA
+
 CREATE OR REPLACE FUNCTION menuTotalParticipation() RETURNS TRIGGER AS $menuTotalParticipation$
     BEGIN
-    --     IF (new.MenuitemId not in (select menuitemid from Main))
-    --     and (new.MenuitemId not in (select menuitemid from Side))
-    --     and    (new.MenuitemId not in (select menuitemid from Dessert))THEN
-    --         Raise exception 'This MenuItem has to be classified as
-    --          a main, a side or a dessert,
-    --         please update it in the respective table in one transaction.';
-    --     END iF;
-    --     IF (new.MenuitemId in (select menuitemid from Main))
-    --     or (new.MenuitemId in (select menuitemid from Side))
-    --     or    (new.MenuitemId in (select menuitemid from Dessert))THEN
-    --         return NULL;
-    --     END iF;
         DELETE FROM Menu
         WHERE menuId NOT IN (SELECT menuId FROM Contains);
         RETURN NULL;
