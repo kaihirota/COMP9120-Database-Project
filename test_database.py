@@ -124,7 +124,7 @@ class Test_db_constraints:
         menucolumns = 'MenuId', 'Description'
         with pytest.raises(Exception):
             self.dbinsert('menu', menucolumns, (0, 'description'))
-            self.dbinsert('menu', menucolumns, (1, 'description'))
+            self.connection.commit()
 
     def test_menuitem_insert(self):
         menucolumns = 'MenuItemId', 'Name', 'Price', 'Description', 'IsA'

@@ -87,18 +87,20 @@ CREATE TABLE OrderItem(
     -- what about item price and order match? check that too?
 );
 
-
-
-
+-- CREATE OR REPLACE FUNCTION menu_has_atleastone_menuitem() RETURNS TRIGGER AS $menu_has_atleastone_menuitem$
+-- $menu_has_atleastone_menuitem$ LANGUAGE plpgsql;
+-- TODO this is not tested
 CREATE OR REPLACE FUNCTION menuTotalParticipation() RETURNS TRIGGER AS $menuTotalParticipation$
-    BEGIN
-        DELETE FROM Menu
-        WHERE menuId NOT IN (SELECT menuId FROM Contains);
-        RETURN NULL;
-    END;
+BEGIN
+  IF (new.MenuId not in (select MenuId from Contains)) THEN
+    Raise exception 'Menuitem needed';
+  END IF;
+  RETURN NULL;
+END;
 $menuTotalParticipation$ LANGUAGE plpgsql;
 
 -- triggers
 CREATE TRIGGER MenuContainsTotalParticipation
     AFTER INSERT OR UPDATE OR DELETE ON Contains
     FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
+
