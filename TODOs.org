@@ -1,0 +1,12 @@
+* TODO Phone number datatype
+  Should this be CHAR(10)? If so, how do we check that a user does not input 'aaaaaaaaaa'
+* TODO Test Inserts [6/9]
+- [X] staff
+- [ ] menu
+- [X] menuitem
+- [ ] contains
+- [X] customer
+- [X] courier
+- [X] delivery
+- [X] order
+- [ ] orderitem
