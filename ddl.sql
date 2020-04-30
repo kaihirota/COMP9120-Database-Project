@@ -59,7 +59,7 @@ CREATE TABLE Contains(
     CONSTRAINT FK_menuItemId_Contains FOREIGN KEY (menuItemId) REFERENCES MenuItem ON DELETE CASCADE
 );
 CREATE TABLE "Order"(
-    orderId INTEGER,
+    orderId INTEGER NOT NULL,
     customerId INTEGER NOT NULL,
     staffId INTEGER NOT NULL,
     deliveryId INTEGER NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE OrderItem(
     customerId INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
     charge NUMERIC(10, 2) NOT NULL,
-    CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId) REFERENCES "Order" ON DELETE CASCADE,
+    CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId, customerId) REFERENCES "Order" ON DELETE CASCADE,
     CONSTRAINT FK_customerId_OrderItem FOREIGN KEY (customerId) REFERENCES Customer, -- ON DELETE CASCADE?
     CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem, -- ON DELETE CASCADE?
     CONSTRAINT CK_quantity_OrderItem CHECK(quantity > 0)
