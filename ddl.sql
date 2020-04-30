@@ -98,31 +98,49 @@ CREATE TABLE OrderItem(
     -- what about item price and order match? check that too?
 );
 
--- TODO this is not tested
--- menu must have at least 1 item
-CREATE OR REPLACE FUNCTION menuTotalParticipation() RETURNS TRIGGER AS $menuTotalParticipation$
+
+CREATE OR REPLACE FUNCTION menu_total_participation() RETURNS TRIGGER AS $menu_total_participation$
 BEGIN
   IF (new.MenuId not in (select MenuId from Contains)) THEN
-    Raise exception 'Menuitem needed';
+    Raise exception 'This menu has no menuitems.';
   END IF;
-  RETURN NULL;
+  return NULL;
 END;
-$menuTotalParticipation$ LANGUAGE plpgsql;
+$menu_total_participation$ LANGUAGE plpgsql;
 
--- triggers
-CREATE TRIGGER MenuContainsTotalParticipation
-    AFTER INSERT OR UPDATE OR DELETE ON Contains
-    FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
+CREATE CONSTRAINT TRIGGER menu_total_participation After INSERT OR UPDATE ON menu
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE PROCEDURE menu_total_participation();
 
--- triggers
-CREATE TRIGGER MenuContainsTotalParticipation
-    AFTER INSERT OR UPDATE OR DELETE ON Contains
-    FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
-CREATE CONSTRAINT TRIGGER Trigger_MenuContains
-AFTER INSERT OR UPDATE OR DELETE ON Menu
-DEFERRABLE INITIALLY DEFERRED
-FOR EACH ROW EXECUTE PROCEDURE menuTotalParticipation();
 
+
+
+
+-- TODO this is not tested
+-- menu must have at least 1 item
+-- CREATE OR REPLACE FUNCTION menuTotalParticipation() RETURNS TRIGGER AS $menuTotalParticipation$
+-- BEGIN
+  -- IF (new.MenuId not in (select MenuId from Contains)) THEN
+    -- Raise exception 'Menuitem needed';
+  -- END IF;
+  -- RETURN NULL;
+-- END;
+-- $menuTotalParticipation$ LANGUAGE plpgsql;
+-- 
+-- -- triggers
+-- CREATE TRIGGER MenuContainsTotalParticipation
+    -- AFTER INSERT OR UPDATE OR DELETE ON Contains
+    -- FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
+-- 
+-- -- triggers
+-- CREATE TRIGGER MenuContainsTotalParticipation
+    -- AFTER INSERT OR UPDATE OR DELETE ON Contains
+    -- FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
+-- CREATE CONSTRAINT TRIGGER Trigger_MenuContains
+-- AFTER INSERT OR UPDATE OR DELETE ON Menu
+-- DEFERRABLE INITIALLY DEFERRED
+-- FOR EACH ROW EXECUTE PROCEDURE menuTotalParticipation();
+-- 
 -- check that each row of menuitem is in main, side, dessert
 -- make sure menuitem cannot be in more than 1 of the 3 tables
 -- CREATE OR REPLACE FUNCTION MenuItemDisjointTotalParticipation() RETURNS TRIGGER AS $MenuItemDisjointTotalParticipation$
