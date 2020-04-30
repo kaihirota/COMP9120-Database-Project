@@ -98,31 +98,75 @@ CREATE TABLE OrderItem(
     -- what about item price and order match? check that too?
 );
 
--- TODO this is not tested
+
 -- menu must have at least 1 item
 CREATE OR REPLACE FUNCTION menuTotalParticipation() RETURNS TRIGGER AS $menuTotalParticipation$
 BEGIN
-  IF (new.MenuId not in (select MenuId from Contains)) THEN
-    Raise exception 'Menuitem needed';
-  END IF;
-  RETURN NULL;
+    IF new.menuId NOT IN (
+        SELECT menuId FROM Contains
+    )
+    THEN RAISE EXCEPTION 'Menu must contain at least 1 item prior to insertion';
+    END IF;
+    IF (new.menuId IN (
+        SELECT menuId FROM Contains
+    )) THEN RETURN NEW;
+    END IF;
 END;
 $menuTotalParticipation$ LANGUAGE plpgsql;
 
--- triggers
-CREATE TRIGGER MenuContainsTotalParticipation
-    AFTER INSERT OR UPDATE OR DELETE ON Contains
-    FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
-
--- triggers
-CREATE TRIGGER MenuContainsTotalParticipation
-    AFTER INSERT OR UPDATE OR DELETE ON Contains
-    FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
 CREATE CONSTRAINT TRIGGER Trigger_MenuContains
 AFTER INSERT OR UPDATE OR DELETE ON Menu
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW EXECUTE PROCEDURE menuTotalParticipation();
 
+  -- check that each row of menuitem is in main, side, dessert
+  -- make sure menuitem cannot be in more than 1 of the 3 tables
+  -- CREATE OR REPLACE FUNCTION MenuItemDisjointTotalParticipation() RETURNS TRIGGER AS $MenuItemDisjointTotalParticipation$
+  --     BEGIN
+  --         IF new.menuItemId NOT IN (
+  --             SELECT * FROM Main
+  --         	UNION ALL
+  --         	SELECT * FROM Side
+  --         	UNION ALL
+  --         	SELECT * FROM Dessert
+  --         ) THEN RAISE EXCEPTION 'Menu items must exist in Main, Side, or Dessert before being inserted to MenuItem table';
+  --         END IF;
+  --         -- RETURN NEW;
+  --         RETURN NULL;
+  --     END;
+  -- $MenuItemDisjointTotalParticipation$ LANGUAGE plpgsql;
+  --
+  -- CREATE TRIGGER Trigger_MenuItem
+  --     BEFORE INSERT OR UPDATE ON menuItem
+  --     FOR EACH STATEMENT EXECUTE PROCEDURE MenuItemDisjointTotalParticipation();
+
+
+
+-- TODO this is not tested
+-- menu must have at least 1 item
+-- CREATE OR REPLACE FUNCTION menuTotalParticipation() RETURNS TRIGGER AS $menuTotalParticipation$
+-- BEGIN
+  -- IF (new.MenuId not in (select MenuId from Contains)) THEN
+    -- Raise exception 'Menuitem needed';
+  -- END IF;
+  -- RETURN NULL;
+-- END;
+-- $menuTotalParticipation$ LANGUAGE plpgsql;
+--
+-- -- triggers
+-- CREATE TRIGGER MenuContainsTotalParticipation
+    -- AFTER INSERT OR UPDATE OR DELETE ON Contains
+    -- FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
+--
+-- -- triggers
+-- CREATE TRIGGER MenuContainsTotalParticipation
+    -- AFTER INSERT OR UPDATE OR DELETE ON Contains
+    -- FOR EACH STATEMENT EXECUTE PROCEDURE menuTotalParticipation();
+-- CREATE CONSTRAINT TRIGGER Trigger_MenuContains
+-- AFTER INSERT OR UPDATE OR DELETE ON Menu
+-- DEFERRABLE INITIALLY DEFERRED
+-- FOR EACH ROW EXECUTE PROCEDURE menuTotalParticipation();
+--
 -- check that each row of menuitem is in main, side, dessert
 -- make sure menuitem cannot be in more than 1 of the 3 tables
 -- CREATE OR REPLACE FUNCTION MenuItemDisjointTotalParticipation() RETURNS TRIGGER AS $MenuItemDisjointTotalParticipation$
