@@ -99,6 +99,31 @@ CREATE TABLE OrderItem(
 );
 
 
+CREATE OR REPLACE FUNCTION MenuItem_IsA() RETURNS TRIGGER AS $MenuItem_IsA$
+begin
+  IF 1 in (
+    SELECT 1 FROM (
+      SELECT cnt FROM (
+        SELECT COUNT(*) AS cnt FROM (
+          SELECT * FROM Main
+           UNION ALL
+          SELECT * FROM Side
+           UNION ALL
+          SELECT * FROM Dessert
+        ) AS u
+         WHERE u.MenuItemId = NEW.MenuItemId
+      ) as f
+       WHERE f.cnt != 1
+    ) as d
+  ) then RAISE EXCEPTION 'exception description TODO ';
+  END IF;
+  return NULL;
+END;
+$MenuItem_IsA$ LANGUAGE plpgsql;
+
+CREATE CONSTRAINT TRIGGER MenuItem_IsA AFTER INSERT OR UPDATE ON MenuItem DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE PROCEDURE MenuItem_IsA();
+
 CREATE OR REPLACE FUNCTION menu_total_participation() RETURNS TRIGGER AS $menu_total_participation$
 BEGIN
   IF (new.MenuId not in (select MenuId from Contains)) THEN
@@ -110,6 +135,7 @@ $menu_total_participation$ LANGUAGE plpgsql;
 
 CREATE CONSTRAINT TRIGGER menu_total_participation After INSERT OR UPDATE ON menu
   DEFERRABLE INITIALLY DEFERRED
+  -- TODO is there a faster way?
   FOR EACH ROW EXECUTE PROCEDURE menu_total_participation();
 
 
