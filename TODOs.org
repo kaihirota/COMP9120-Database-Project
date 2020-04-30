@@ -1,0 +1,2 @@
+* TODO Phone number datatype
+  Should this be CHAR(10)? If so, how do we check that a user does not input 'aaaaaaaaaa'
