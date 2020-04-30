@@ -41,7 +41,7 @@ CREATE TABLE Courier(
     courierId INTEGER PRIMARY KEY,
     name VARCHAR(30) NOT NULL,
     address VARCHAR(100),
-    mobile CHAR(10)
+    mobile CHAR(10) NOT NULL
 );
 CREATE TABLE Delivery(
     deliveryId INTEGER PRIMARY KEY,
@@ -59,13 +59,14 @@ CREATE TABLE Contains(
     CONSTRAINT FK_menuItemId_Contains FOREIGN KEY (menuItemId) REFERENCES MenuItem ON DELETE CASCADE
 );
 CREATE TABLE "Order"(
-    orderId INTEGER PRIMARY KEY,
+    orderId INTEGER,
     customerId INTEGER NOT NULL,
     staffId INTEGER NOT NULL,
     deliveryId INTEGER NOT NULL,
     -- using reserved words like DATETIME to name columns is bad practice
     datetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     totalCharge FLOAT NOT NULL,
+    PRIMARY KEY (orderId, customerId),
     CONSTRAINT FK_customerId_Order FOREIGN KEY (customerId) REFERENCES Customer ON DELETE CASCADE,
     CONSTRAINT FK_staffId_Order FOREIGN KEY (staffId) REFERENCES Staff, -- ON DELETE CASCADE?
     CONSTRAINT FK_deliveryId_Order FOREIGN KEY (deliveryId) REFERENCES Delivery ON DELETE CASCADE, -- necessary?
