@@ -122,22 +122,36 @@ class Test_db_constraints:
             print('>', row)
         return rv
 
-    def run_multiple_inserts(self, table, columns, value_error_pairs, commits=True):
+    def run_multiple_inserts(self, table, columns, value_error_pairs):
         for vals, err in value_error_pairs:
             if err is None:
                 self.dbinsert(table, columns, vals)
             else:
                 with pytest.raises(err):
                     self.dbinsert(table, columns, vals, msg=f'insert row to {table}, should fail')
-            if commits:
-                self.commit()
-
-    def TODO_menu_contains_insert(self):
-        # menu gets inserted first, as the 'at least one' constraint is deferred
-        menucolumns = 'MenuId', 'Description'
-        with pytest.raises(Exception):
-            self.dbinsert('menu', menucolumns, (0, 'description'))
             self.commit()
+
+    def test_menu_contains_insert(self):
+        # menu contains at least one menuitem on commit
+        menucolumns = 'MenuId', 'Description'
+        self.dbinsert('menu', menucolumns, (0, 'description'))
+        with pytest.raises(Exception):
+            self.commit()
+        self.rollback()
+        # insert menuitem first
+        self.dbinsert('Main', None, (8,))
+        self.dbinsert('MenuItem', ('MenuItemId', 'Name', 'Price'), (8, 'name', 20))
+        self.commit()
+
+        # insert menu that contains that menuitem
+        self.dbinsert('contains', ('menuid', 'menuitemid'), (0, 8))
+        self.dbinsert('Menu', menucolumns, (0, 'desc'))
+        self.commit()
+
+        # insert menu that contains that menuitem (other way around)
+        self.dbinsert('Menu', menucolumns, (1, 'desc'))
+        self.dbinsert('contains', ('menuid', 'menuitemid'), (1, 8))
+        self.commit()
 
     def test_menuitem_heirarchy(self):
         menuitemcols = 'MenuItemId', 'Name', 'Price', 'Description'
