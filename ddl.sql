@@ -85,16 +85,15 @@ CREATE TABLE "Order"(
     CONSTRAINT CK_totalCharge_Order CHECK(totalCharge > 0)
 );
 CREATE TABLE OrderItem(
-    orderItemId INTEGER PRIMARY KEY,
-    orderId INTEGER NOT NULL,
-    customerId INTEGER NOT NULL,
+    orderItemId INTEGER,
+    orderId INTEGER,
+    customerId INTEGER,
     menuItemId INTEGER NOT NULL,
     customerId INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
     charge NUMERIC(10, 2) NOT NULL,
     PRIMARY KEY (orderItemId, orderId, customerId),
-    CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId) REFERENCES "Order" ON DELETE CASCADE,
-    CONSTRAINT FK_customerId_OrderItem FOREIGN KEY (customerId) REFERENCES Customer, -- ON DELETE CASCADE?
+    CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId, customerId) REFERENCES "Order" ON DELETE CASCADE,
     CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem, -- ON DELETE CASCADE?
     CONSTRAINT CK_quantity_OrderItem CHECK(quantity > 0)
     -- add check - ensure order and order item matches
