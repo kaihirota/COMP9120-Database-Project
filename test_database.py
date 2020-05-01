@@ -127,42 +127,43 @@ class Test_db_constraints:
             self.connection.commit()
 
     def test_menuitem_insert(self):
-        menucolumns = 'MenuItemId', 'Name', 'Price', 'Description', 'IsA'
+        # TODO this needs menuitem fails
+        menucolumns = 'MenuItemId', 'Name', 'Price', 'Description'
         values = [
             # test name not null
-            ((0, None, 10, 'desc', 'Main'), NotNullViolation),
+            ((0, None, 10, 'desc'), NotNullViolation),
             # test name and price not unique
-            ((0, 'name', 10, 'desc', 'Main'), None),
-            ((1, 'name', 10, 'desc', 'Main'), None),
+            ((0, 'name', 10, 'desc'), None),
+            ((1, 'name', 10, 'desc'), None),
             # test name length
-            ((3, 'a' * 30, 10, 'desc', 'Main'), None),
-            ((4, 'a' * 400, 10, 'desc', 'Main'), Exception),
+            ((3, 'a' * 30, 10, 'desc'), None),
+            ((4, 'a' * 400, 10, 'desc'), Exception),
 
             # test id not null
-            ((None, 'name', 10, 'desc', 'Main'), NotNullViolation),
+            ((None, 'name', 10, 'desc'), NotNullViolation),
             # test id is unique
-            ((3, 'name', 10, 'desc', 'Main'), UniqueViolation),
+            ((3, 'name', 10, 'desc'), UniqueViolation),
 
             # test price not null
-            ((5, 'name', None, 'desc', 'Main'), NotNullViolation),
+            ((5, 'name', None, 'desc'), NotNullViolation),
             # test price is number
-            ((5, 'name', 'abc', 'desc', 'Main'), Exception),
+            ((5, 'name', 'abc', 'desc'), Exception),
             # test price cant have .001 cents
-            ((5, 'name', 10.001, 'desc', 'Main'), None),
+            ((5, 'name', 10.001, 'desc'), None),
             # test price can have cents
-            # ((5, 'name', 10.30, 'desc', 'Main'), Exception),
+            # ((5, 'name', 10.30, 'desc'), Exception),
 
             # test description can be null
-            ((6, 'name', 10, 'desc', 'Main'), None),
+            ((6, 'name', 10, 'desc'), None),
 
             # test isa is one of ('Main', 'Side', 'Dessert')
-            ((7, 'name', 10, 'desc', 'Main'), None),
-            ((8, 'name', 10, 'desc', 'Side'), None),
-            ((9, 'name', 10, 'desc', 'Dessert'), None),
-            ((10, 'name', 10, 'desc', 'main'), Exception),
-            ((10, 'name', 10, 'desc', 'side'), Exception),
-            ((10, 'name', 10, 'desc', 'dessert'), Exception),
-            ((10, 'name', 10, 'desc', 'otheritem'), Exception),
+            ((7, 'name', 10, 'desc'), None),
+            ((8, 'name', 10, 'desc'), None),
+            ((9, 'name', 10, 'desc'), None),
+            ((10, 'name', 10, 'desc'), Exception),
+            ((10, 'name', 10, 'desc'), Exception),
+            ((10, 'name', 10, 'desc'), Exception),
+            ((10, 'name', 10, 'desc'), Exception),
         ]
         self.run_multiple_inserts('MenuItem', menucolumns, values)
 
