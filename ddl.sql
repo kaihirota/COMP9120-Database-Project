@@ -49,7 +49,7 @@ CREATE TABLE Courier(
     courierId INTEGER PRIMARY KEY,
     name VARCHAR(30) NOT NULL,
     address VARCHAR(100),
-    mobile CHAR(10)
+    mobile CHAR(10) NOT NULL
 );
 CREATE TABLE Delivery(
     deliveryId INTEGER PRIMARY KEY,
@@ -103,12 +103,12 @@ CREATE TABLE OrderItem(
 -- menu must have at least 1 item
 CREATE OR REPLACE FUNCTION menuMinimum1() RETURNS TRIGGER AS $menuMinimum1$
 BEGIN
-  IF new.menuId NOT IN (
-    SELECT menuId FROM Contains
-  ) THEN
-    RAISE EXCEPTION 'Menu must contain at least 1 item prior to insertion';
+    IF new.menuId NOT IN (
+        SELECT menuId FROM Contains
+    )
+    THEN RAISE EXCEPTION 'Menu must contain at least 1 item prior to insertion';
     END IF;
-  RETURN NULL;
+    RETURN NULL;
 END;
 $menuMinimum1$ LANGUAGE plpgsql;
 
