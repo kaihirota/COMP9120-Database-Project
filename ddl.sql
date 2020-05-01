@@ -1,3 +1,5 @@
+-- we did not include ON DELETE CACADE to some tables that had foreign keys,
+-- because we thought it would put the data at risk of being deleted unintentionally.
 DROP TABLE IF EXISTS Staff CASCADE;
 DROP TABLE IF EXISTS Menu CASCADE;
 DROP TABLE IF EXISTS MenuItem CASCADE;
@@ -28,15 +30,27 @@ CREATE TABLE MenuItem(
 );
 CREATE TABLE Main(
     menuItemId INTEGER PRIMARY KEY,
-    CONSTRAINT FK_menuItemId_Main FOREIGN KEY (menuItemId) REFERENCES MenuItem ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    CONSTRAINT FK_menuItemId_Main FOREIGN KEY (menuItemId)
+    REFERENCES MenuItem
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    DEFERRABLE INITIALLY DEFERRED
 );
 CREATE TABLE Side(
     menuItemId INTEGER PRIMARY KEY,
-    CONSTRAINT FK_menuItemId_Side FOREIGN KEY (menuItemId) REFERENCES MenuItem ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    CONSTRAINT FK_menuItemId_Side FOREIGN KEY (menuItemId)
+    REFERENCES MenuItem
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    DEFERRABLE INITIALLY DEFERRED
 );
 CREATE TABLE Dessert(
     menuItemId INTEGER PRIMARY KEY,
-    CONSTRAINT FK_menuItemId_Dessert FOREIGN KEY (menuItemId) REFERENCES MenuItem ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    CONSTRAINT FK_menuItemId_Dessert FOREIGN KEY (menuItemId)
+    REFERENCES MenuItem
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    DEFERRABLE INITIALLY DEFERRED
 );
 CREATE TABLE Customer(
     customerId INTEGER PRIMARY KEY,
@@ -56,15 +70,23 @@ CREATE TABLE Delivery(
     courierId INTEGER NOT NULL,
     timeReady TIMESTAMP NOT NULL,
     timeDelivered TIMESTAMP NOT NULL,
-    CONSTRAINT FK_courierId_Delivery FOREIGN KEY (courierId) REFERENCES Courier ON UPDATE CASCADE,
+    CONSTRAINT FK_courierId_Delivery FOREIGN KEY (courierId)
+    REFERENCES Courier ON UPDATE CASCADE,
     CONSTRAINT CK_timeConflict_Delivery CHECK(timeReady < timeDelivered)
 );
 CREATE TABLE Contains(
     menuId INTEGER,
     menuItemId INTEGER,
     PRIMARY KEY (menuId, menuItemId),
-    CONSTRAINT FK_menuId_Contains FOREIGN KEY (menuId) REFERENCES Menu (menuId) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-    CONSTRAINT FK_menuItemId_Contains FOREIGN KEY (menuItemId) REFERENCES MenuItem (menuItemId) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT FK_menuId_Contains FOREIGN KEY (menuId)
+    REFERENCES Menu (menuId)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+    DEFERRABLE INITIALLY DEFERRED,
+    CONSTRAINT FK_menuItemId_Contains FOREIGN KEY (menuItemId)
+    REFERENCES MenuItem (menuItemId)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
 );
 CREATE TABLE "Order"(
     orderId INTEGER,
@@ -75,9 +97,12 @@ CREATE TABLE "Order"(
     datetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     totalCharge FLOAT NOT NULL,
     PRIMARY KEY (orderId, customerId),
-    CONSTRAINT FK_customerId_Order FOREIGN KEY (customerId) REFERENCES Customer ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT FK_staffId_Order FOREIGN KEY (staffId) REFERENCES Staff ON UPDATE CASCADE,
-    CONSTRAINT FK_deliveryId_Order FOREIGN KEY (deliveryId) REFERENCES Delivery ON UPDATE CASCADE,
+    CONSTRAINT FK_customerId_Order FOREIGN KEY (customerId)
+    REFERENCES Customer ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_staffId_Order FOREIGN KEY (staffId)
+    REFERENCES Staff ON UPDATE CASCADE,
+    CONSTRAINT FK_deliveryId_Order FOREIGN KEY (deliveryId)
+    REFERENCES Delivery ON UPDATE CASCADE,
     CONSTRAINT CK_totalCharge_Order CHECK(totalCharge > 0)
 );
 CREATE TABLE OrderItem(
@@ -88,11 +113,13 @@ CREATE TABLE OrderItem(
     quantity INTEGER NOT NULL,
     charge NUMERIC(10, 2) NOT NULL,
     PRIMARY KEY (orderItemId, orderId, customerId),
-    CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId, customerId) REFERENCES "Order" ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId, customerId)
+    REFERENCES "Order" ON UPDATE CASCADE ON DELETE CASCADE,
 
     -- Doesn't delete on cascade because even if menuitems get deleted, it
     -- wouldn't be ideal to lose past transactions
-    CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem ON UPDATE CASCADE,
+    CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId)
+    REFERENCES MenuItem ON UPDATE CASCADE,
     -- we didn't add constraint (trigger) to check if the total fee matches the
     -- individual items because we may have to account for overhead cost such as
     -- delivery fee and tax
@@ -120,7 +147,8 @@ FOR EACH ROW EXECUTE PROCEDURE menuMinimum1();
 
 
 -- menuitem can only be one of Main, Side, Dessert
-CREATE OR REPLACE FUNCTION menuTotalParticipation() RETURNS TRIGGER AS $menuTotalParticipation$
+CREATE OR REPLACE FUNCTION menuTotalParticipation()
+  RETURNS TRIGGER AS $menuTotalParticipation$
 BEGIN
     IF new.menuItemId IN (
         SELECT mi.menuItemId
@@ -157,7 +185,8 @@ DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW EXECUTE PROCEDURE menuTotalParticipation();
 
 -- menuitem must be in one of main, side, dessert
-CREATE OR REPLACE FUNCTION menuItemTotalParticipation() RETURNS TRIGGER AS $menuItemTotalParticipation$
+CREATE OR REPLACE FUNCTION menuItemTotalParticipation()
+  RETURNS TRIGGER AS $menuItemTotalParticipation$
 BEGIN
     IF new.menuItemId NOT IN (
         SELECT menuItemId FROM Main
