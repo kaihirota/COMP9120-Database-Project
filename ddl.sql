@@ -85,36 +85,39 @@ CREATE TABLE OrderItem(
     orderId INTEGER,
     customerId INTEGER,
     menuItemId INTEGER NOT NULL,
-    customerId INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
     charge NUMERIC(10, 2) NOT NULL,
     PRIMARY KEY (orderItemId, orderId, customerId),
     CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId, customerId) REFERENCES "Order" ON DELETE CASCADE,
-    CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem, -- Doesn't delete on cascade because even if menuitems get deleted, it wouldn't be ideal to lose past transactions
+
+    -- Doesn't delete on cascade because even if menuitems get deleted, it
+    -- wouldn't be ideal to lose past transactions
+    CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem,
+    -- we didn't add constraint (trigger) to check if the total fee matches the
+    -- individual items because we may have to account for overhead cost such as
+    -- delivery fee and tax
     CONSTRAINT CK_quantity_OrderItem CHECK(quantity > 0)
-    -- we didn't add a trigger to check if the total fee matches the individual items because we would have to account for overhead cost such as delivery fee and tax
 );
 
 
 -- menu must have at least 1 item
 CREATE OR REPLACE FUNCTION menuMinimum1() RETURNS TRIGGER AS $menuMinimum1$
 BEGIN
-    IF new.menuId NOT IN (
-        SELECT menuId FROM Contains
-    )
-    THEN RAISE EXCEPTION 'Menu must contain at least 1 item prior to insertion';
+  IF new.menuId NOT IN (
+    SELECT menuId FROM Contains
+  ) THEN
+    RAISE EXCEPTION 'Menu must contain at least 1 item prior to insertion';
     END IF;
-    IF (new.menuId IN (
-        SELECT menuId FROM Contains
-    )) THEN RETURN NULL;
-    END IF;
+  RETURN NULL;
 END;
 $menuMinimum1$ LANGUAGE plpgsql;
 
+-- add the trigger as a constraint on menu
 CREATE CONSTRAINT TRIGGER Trigger_MenuContains
 AFTER INSERT OR UPDATE OR DELETE ON Menu
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW EXECUTE PROCEDURE menuMinimum1();
+
 
 -- menuitem can only be one of Main, Side, Dessert
 CREATE OR REPLACE FUNCTION menuTotalParticipation() RETURNS TRIGGER AS $menuTotalParticipation$
@@ -123,11 +126,11 @@ BEGIN
         SELECT mi.menuItemId
         FROM MenuItem AS mi
         LEFT JOIN (
-            SELECT menuItemId FROM Main
-            UNION ALL
-            SELECT menuItemId FROM Side
-            UNION ALL
-            SELECT menuItemId FROM Dessert
+          SELECT menuItemId FROM Main
+           UNION ALL
+          SELECT menuItemId FROM Side
+           UNION ALL
+          SELECT menuItemId FROM Dessert
         ) AS items ON items.menuItemId = mi.menuItemId
         GROUP BY mi.menuItemId
         HAVING COUNT(mi.menuItemId) != 1
@@ -173,3 +176,4 @@ CREATE CONSTRAINT TRIGGER Trigger_MenuItem
 AFTER INSERT OR UPDATE OR DELETE ON MenuItem
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW EXECUTE PROCEDURE menuItemTotalParticipation();
+
