@@ -477,3 +477,7 @@ class Test_db_constraints:
             ((1, 0, 0, 3, 2, 20), Exception),  # Fails here. check if this should be fixed.
         ]
         self.run_multiple_inserts('OrderItem', columns, values)
+
+    def test_dummy_insert(self):
+        with open('dummy_insert.sql') as f:
+            self.dbexec(f.read())
