@@ -126,11 +126,11 @@ BEGIN
         SELECT mi.menuItemId
         FROM MenuItem AS mi
         LEFT JOIN (
-          SELECT menuItemId FROM Main
-           UNION ALL
-          SELECT menuItemId FROM Side
-           UNION ALL
-          SELECT menuItemId FROM Dessert
+            SELECT menuItemId FROM Main
+            UNION ALL
+            SELECT menuItemId FROM Side
+            UNION ALL
+            SELECT menuItemId FROM Dessert
         ) AS items ON items.menuItemId = mi.menuItemId
         GROUP BY mi.menuItemId
         HAVING COUNT(mi.menuItemId) != 1
@@ -176,4 +176,3 @@ CREATE CONSTRAINT TRIGGER Trigger_MenuItem
 AFTER INSERT OR UPDATE OR DELETE ON MenuItem
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW EXECUTE PROCEDURE menuItemTotalParticipation();
-
