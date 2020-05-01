@@ -1,7 +1,3 @@
--- 1. Fields in a tuple related to dates and times should always have values.
--- 2. All fields in a tuple relating to details about a name (eg: Menu Item Name, First Name, etc) should always have a value.
--- 4. Customers must have a specified mobile number.
-
 DROP TABLE IF EXISTS Staff CASCADE;
 DROP TABLE IF EXISTS Menu CASCADE;
 DROP TABLE IF EXISTS MenuItem CASCADE;
@@ -80,8 +76,8 @@ CREATE TABLE "Order"(
     totalCharge FLOAT NOT NULL,
     PRIMARY KEY (orderId, customerId),
     CONSTRAINT FK_customerId_Order FOREIGN KEY (customerId) REFERENCES Customer ON DELETE CASCADE,
-    CONSTRAINT FK_staffId_Order FOREIGN KEY (staffId) REFERENCES Staff, -- ON DELETE CASCADE?
-    CONSTRAINT FK_deliveryId_Order FOREIGN KEY (deliveryId) REFERENCES Delivery ON DELETE CASCADE, -- necessary?
+    CONSTRAINT FK_staffId_Order FOREIGN KEY (staffId) REFERENCES Staff,
+    CONSTRAINT FK_deliveryId_Order FOREIGN KEY (deliveryId) REFERENCES Delivery,
     CONSTRAINT CK_totalCharge_Order CHECK(totalCharge > 0)
 );
 CREATE TABLE OrderItem(
@@ -94,10 +90,9 @@ CREATE TABLE OrderItem(
     charge NUMERIC(10, 2) NOT NULL,
     PRIMARY KEY (orderItemId, orderId, customerId),
     CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId, customerId) REFERENCES "Order" ON DELETE CASCADE,
-    CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem, -- ON DELETE CASCADE?
+    CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem, -- Doesn't delete on cascade because even if menuitems get deleted, it wouldn't be ideal to lose past transactions
     CONSTRAINT CK_quantity_OrderItem CHECK(quantity > 0)
-    -- add check - ensure order and order item matches
-    -- what about item price and order match? check that too?
+    -- we didn't add a trigger to check if the total fee matches the individual items because we would have to account for overhead cost such as delivery fee and tax
 );
 
 
