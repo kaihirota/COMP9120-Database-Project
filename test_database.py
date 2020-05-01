@@ -252,6 +252,7 @@ class Test_db_constraints:
         ]
         self.run_multiple_inserts('Courier', columns, values)
 
+
     def test_delivery_insert(self):
         columns = 'DeliveryId', 'TimeReady', 'TimeDelivered', 'CourierId'
         values = [
@@ -296,7 +297,8 @@ class Test_db_constraints:
         ]
         self.run_multiple_inserts('Delivery', columns, values)
 
-    def TODO_order_insert(self):
+
+    def test_order_insert(self):
         # all should fail before customer
         columns = 'OrderId', 'DateTime', 'TotalCharge', 'CustomerId', 'DeliveryId', 'StaffId'
         d = datetime(2020, 1, 1, 1, 1, 0)
@@ -336,14 +338,14 @@ class Test_db_constraints:
 
             # all foreign keys must exist
             ((1, d, 20, 20, 0, 0), ForeignKeyViolation),
-            ((1, d, 20, 0, 20, 0), ForeignKeyViolation),
-            ((1, d, 20, 0, 0, 20), ForeignKeyViolation),
+            ((10, d, 20, 0, 20, 0), ForeignKeyViolation),
+            ((20, d, 20, 0, 0, 20), ForeignKeyViolation),
         ]
         self.run_multiple_inserts('"Order"', columns, values)
+
 
     def TODO_orderitem_insert(self):
         columns = 'OrderItemId', 'OrderId', 'CustomerId', 'Quantity', 'Charge'
         self.test_menuitem_insert()
         values = [
         ]
-
