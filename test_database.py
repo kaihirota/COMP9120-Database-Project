@@ -438,8 +438,42 @@ class Test_db_constraints:
         ]
         self.run_multiple_inserts('"Order"', columns, values)
 
-    def TODO_orderitem_insert(self):
-        columns = 'OrderItemId', 'OrderId', 'CustomerId', 'Quantity', 'Charge'
-        self.test_menuitem_insert()
+    def test_orderitem_insert(self):
+        columns = 'OrderItemId', 'OrderId', 'CustomerId', 'MenuItemId', 'Quantity', 'Charge'
+
+        # make sure each FK must be there (as bold lines)
         values = [
+            ((None, 0, 0, 0, 1, 20), NotNullViolation),
+            ((0, None, 0, 0, 1, 20), NotNullViolation),
+            ((0, 0, None, 0, 1, 20), NotNullViolation),
+            ((0, 0, 0, None, 1, 20), NotNullViolation),
         ]
+        self.run_multiple_inserts('OrderItem', columns, values)
+
+        self.test_menuitem_insert()
+        # get table MenuItem
+        # > (3, 'aaaaaaaaaaaaaaaaaaaa', Decimal('10.00'), 'desc')
+        # > (5, 'name', Decimal('10.00'), 'desc')
+        # > (6, 'name', Decimal('10.00'), 'desc')
+
+        self.test_order_insert()
+        self.dbget_table('"Order"', ('OrderId', 'CustomerId'))
+        # get table "Order"
+        # > (0, 0)
+        # > (1, 0)
+        # > (0, 1)
+
+        values = [
+            # check all foreign keys
+            ((0, 2, 0, 3, 2, 20), ForeignKeyViolation),
+            ((0, 0, 2, 3, 2, 20), ForeignKeyViolation),
+            ((0, 0, 0, 0, 2, 20), ForeignKeyViolation),
+            ((0, 0, 0, 0, 2, 20), ForeignKeyViolation),
+            # check it can insert
+            ((0, 0, 0, 3, 2, 20), None),
+            # check qty of 0 is not allowed
+            ((1, 0, 0, 5, 0, 20), Exception),
+            # check ordering the same item with different orderItems is not allowed
+            ((1, 0, 0, 3, 2, 20), Exception),  # Fails here. check if this should be fixed.
+        ]
+        self.run_multiple_inserts('OrderItem', columns, values)
