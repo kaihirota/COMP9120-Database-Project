@@ -15,7 +15,7 @@ from psycopg2.extensions import connection as Connection
 from psycopg2.errors import UniqueViolation, NotNullViolation, ForeignKeyViolation, InFailedSqlTransaction
 from typing import List, Sequence
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime
 
 Value = str
 
@@ -66,12 +66,10 @@ class Test_db_constraints:
         self.commit()
 
     def teardown_method(self):
-        print('starting teardown')
         try:
             self.commit()
         except InFailedSqlTransaction:
             pass
-        print('committed.')
         for table in self.tables:
             self.dbget_table(table)
             self.dbexec(self.create_drop_statement(table))
@@ -79,7 +77,10 @@ class Test_db_constraints:
         self.connection.close()
 
     def commit(self):
-        self.connection.commit()
+        try:
+            self.connection.commit()
+        except Exception:
+            raise
 
     def dbquery(self,
                 sql: str,
@@ -116,7 +117,11 @@ class Test_db_constraints:
         return rv
 
     def run_multiple_inserts(self, table, columns, value_error_pairs, commits=True):
-        for vals, err in value_error_pairs:
+        for package in value_error_pairs:
+            if table is None:
+                table, vals, err = package
+            else:
+                vals, err = package
             if err is None:
                 self.dbinsert(table, columns, vals)
             else:
@@ -125,7 +130,7 @@ class Test_db_constraints:
             if commits:
                 self.commit()
 
-    def test_menu_contains_insert(self):
+    def TODO_menu_contains_insert(self):
         # menu gets inserted first, as the 'at least one' constraint is deferred
         menucolumns = 'MenuId', 'Description'
         with pytest.raises(Exception):
@@ -133,19 +138,74 @@ class Test_db_constraints:
             self.commit()
 
     def test_menuitem_insert(self):
-        # TODO this needs menuitem fails
-        menucolumns = 'MenuItemId', 'Name', 'Price', 'Description'
-        values = [
-            # test name not null
-            ((0, 'name', 10, 'desc'), None),
-        ]
-        self.run_multiple_inserts('MenuItem', menucolumns, values)
+        menuitemcols = 'MenuItemId', 'Name', 'Price', 'Description'
+        types = 'Main', 'Side', 'Dessert'
+
+        icount = 0
+        # allows insertion of menuitem first
+        self.dbinsert('MenuItem',
+                      menuitemcols,
+                      (0, 'name', 20, 'desc'))
+        with pytest.raises(Exception):
+            self.commit()
+
+        for t in types:
+            self.dbinsert(t, ('MenuItemId',), (0,))
+            with pytest.raises(Exception):
+                self.commit()
+
+            # insert a row MenuItem First
+            self.dbinsert('MenuItem',
+                          menuitemcols,
+                          (icount, f'name {icount}', 20, f'desc {icount}'))
+            self.dbinsert(t, ('MenuItemId',), (icount,))
+            self.commit()
+            icount += 1
+
+            self.dbinsert(t, ('MenuItemId',), (icount,))
+            self.dbinsert('MenuItem',
+                          menuitemcols,
+                          (icount, f'name {icount}', 20, f'desc {icount}'))
+            self.commit()
+            icount += 1
+
+        # output now looks like this:
+        # get table MenuItem
+        # > (0, 'name 0', Decimal('20.00'), 'desc 0')
+        # > (1, 'name 1', Decimal('20.00'), 'desc 1')
+        # > (2, 'name 2', Decimal('20.00'), 'desc 2')
+        # > (3, 'name 3', Decimal('20.00'), 'desc 3')
+        # > (4, 'name 4', Decimal('20.00'), 'desc 4')
+        # > (5, 'name 5', Decimal('20.00'), 'desc 5')
+
+        # get table Main
+        # > (0,)
+        # > (1,)
+
+        # get table Side
+        # > (2,)
+        # > (3,)
+
+        # get table Dessert
+        # > (4,)
+        # > (5,)
+
+        # cant make an entry multiple types
+        for t, i in zip(types * 2, (2, 4, 0, 5, 1, 3)):
+            with pytest.raises(Exception):
+                self.dbinsert(t, None, (i,))
+                self.commit()  # TODO this should fail at insert not at commit.
+        # database is the same as previous output
+
+        self.dbget_table('MenuItem')
         columns = 'MenuItemId',
         values = [
             ((0,), None),
-            ((0,), Exception),
+            ((1,), Exception),
         ]
-        self.run_multiple_inserts('Main', columns, values)
+        self.run_multiple_inserts('Main', columns, values, commit=False)
+        with pytest.raises(Exception):
+            self.commit()
         return
         values = [
             ((1,), None),
@@ -160,7 +220,6 @@ class Test_db_constraints:
             ((2,), Exception),
         ]
         self.run_multiple_inserts('Side', columns, values)
-        return
         values = [
             # test name not null
             ((0, None, 10, 'desc'), NotNullViolation),
@@ -197,7 +256,6 @@ class Test_db_constraints:
             ((10, 'name', 10, 'desc'), Exception),
             ((10, 'name', 10, 'desc'), Exception),
         ]
-        self.run_multiple_inserts('MenuItem', menucolumns, values)
 
         # item 5 must not retain the extra decimal
         menuitems = self.dbget_table('MenuItem', columns=('menuItemId', 'price'))
@@ -285,7 +343,6 @@ class Test_db_constraints:
         ]
         self.run_multiple_inserts('Courier', columns, values)
 
-
     def test_delivery_insert(self):
         columns = 'DeliveryId', 'TimeReady', 'TimeDelivered', 'CourierId'
         values = [
@@ -330,12 +387,10 @@ class Test_db_constraints:
         ]
         self.run_multiple_inserts('Delivery', columns, values)
 
-
     def test_order_insert(self):
         # all should fail before customer
         columns = 'OrderId', 'DateTime', 'TotalCharge', 'CustomerId', 'DeliveryId', 'StaffId'
         d = datetime(2020, 1, 1, 1, 1, 0)
-        dp = d + timedelta(seconds=20)
         values = [
             ((0, d, 20, 0, 0, 0), Exception),
         ]
@@ -375,7 +430,6 @@ class Test_db_constraints:
             ((20, d, 20, 0, 0, 20), ForeignKeyViolation),
         ]
         self.run_multiple_inserts('"Order"', columns, values)
-
 
     def TODO_orderitem_insert(self):
         columns = 'OrderItemId', 'OrderId', 'CustomerId', 'Quantity', 'Charge'
