@@ -71,13 +71,14 @@ CREATE TABLE Contains(
     CONSTRAINT FK_menuItemId_Contains FOREIGN KEY (menuItemId) REFERENCES MenuItem (menuItemId) ON DELETE CASCADE
 );
 CREATE TABLE "Order"(
-    orderId INTEGER PRIMARY KEY,
-    customerId INTEGER NOT NULL,
+    orderId INTEGER,
+    customerId INTEGER,
     staffId INTEGER NOT NULL,
     deliveryId INTEGER NOT NULL,
     -- using reserved words like DATETIME to name columns is bad practice
     datetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     totalCharge FLOAT NOT NULL,
+    PRIMARY KEY (orderId, customerId),
     CONSTRAINT FK_customerId_Order FOREIGN KEY (customerId) REFERENCES Customer ON DELETE CASCADE,
     CONSTRAINT FK_staffId_Order FOREIGN KEY (staffId) REFERENCES Staff, -- ON DELETE CASCADE?
     CONSTRAINT FK_deliveryId_Order FOREIGN KEY (deliveryId) REFERENCES Delivery ON DELETE CASCADE, -- necessary?
@@ -86,10 +87,12 @@ CREATE TABLE "Order"(
 CREATE TABLE OrderItem(
     orderItemId INTEGER PRIMARY KEY,
     orderId INTEGER NOT NULL,
+    customerId INTEGER NOT NULL,
     menuItemId INTEGER NOT NULL,
     customerId INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
     charge NUMERIC(10, 2) NOT NULL,
+    PRIMARY KEY (orderItemId, orderId, customerId),
     CONSTRAINT FK_orderId_OrderItem FOREIGN KEY (orderId) REFERENCES "Order" ON DELETE CASCADE,
     CONSTRAINT FK_customerId_OrderItem FOREIGN KEY (customerId) REFERENCES Customer, -- ON DELETE CASCADE?
     CONSTRAINT FK_menuItemId_OrderItem FOREIGN KEY (menuItemId) REFERENCES MenuItem, -- ON DELETE CASCADE?
