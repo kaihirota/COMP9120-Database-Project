@@ -10,13 +10,9 @@
 # please use the same names as in the ER diagram for naming tables and attributes)
 import json
 import re
-import sys
-import os
-with open('output.txt', 'a') as f:
-    print(sys.path, file=f)
-    print(os.path.dirname(sys.executable), file=f)
 from psycopg2 import connect
-from psycopg2.errors import UniqueViolation, NotNullViolation, ForeignKeyViolation
+from psycopg2.extensions import connection as Connection
+from psycopg2.errors import UniqueViolation, NotNullViolation, ForeignKeyViolation, InFailedSqlTransaction
 from typing import List, Sequence
 import pytest
 from datetime import datetime, timedelta
@@ -55,7 +51,7 @@ class Test_db_constraints:
         # connect to database
         with open(f'SQL_CREDENTIALS.json') as creds_file:
             sql_creds = json.load(creds_file)
-        self.connection = connect(database='comp9120_a2', **sql_creds)
+        self.connection: Connection = connect(database='comp9120_a2', **sql_creds)
 
         if not self.connection:
             raise RuntimeError(f'could not connect to db with creds {sql_creds}')
@@ -67,13 +63,23 @@ class Test_db_constraints:
         for table in self.tables:
             self.dbexec(self.create_drop_statement(table), msg=f'drop table {table}')
         self.dbexec(ddl, msg='create all tables from ddl')
+        self.commit()
 
     def teardown_method(self):
-        self.connection.commit()
+        print('starting teardown')
+        try:
+            self.commit()
+        except InFailedSqlTransaction:
+            pass
+        print('committed.')
         for table in self.tables:
             self.dbget_table(table)
             self.dbexec(self.create_drop_statement(table))
+        self.commit()
         self.connection.close()
+
+    def commit(self):
+        self.connection.commit()
 
     def dbquery(self,
                 sql: str,
@@ -81,18 +87,16 @@ class Test_db_constraints:
                 msg: str = ''):
         print(msg)
         rv = []
-        with self.connection:
-            with self.connection.cursor() as cur:
-                cur.execute(sql, args)
-                for record in cur:
-                    rv.append(record)
+        with self.connection.cursor() as cur:
+            cur.execute(sql, args)
+            for record in cur:
+                rv.append(record)
         return rv
 
     def dbexec(self, sql: str, args: Sequence[str] = None, msg: str = ''):
         print(msg)
-        with self.connection:
-            with self.connection.cursor() as cur:
-                cur.execute(sql, args)
+        with self.connection.cursor() as cur:
+            cur.execute(sql, args)
 
     def dbinsert(self, table, columns, values, msg=None):
         if msg is None:
@@ -111,24 +115,52 @@ class Test_db_constraints:
             print('>', row)
         return rv
 
-    def run_multiple_inserts(self, table, columns, value_error_pairs):
+    def run_multiple_inserts(self, table, columns, value_error_pairs, commits=True):
         for vals, err in value_error_pairs:
             if err is None:
                 self.dbinsert(table, columns, vals)
             else:
                 with pytest.raises(err):
                     self.dbinsert(table, columns, vals, msg=f'insert row to {table}, should fail')
+            if commits:
+                self.commit()
 
     def test_menu_contains_insert(self):
         # menu gets inserted first, as the 'at least one' constraint is deferred
         menucolumns = 'MenuId', 'Description'
         with pytest.raises(Exception):
             self.dbinsert('menu', menucolumns, (0, 'description'))
-            self.connection.commit()
+            self.commit()
 
     def test_menuitem_insert(self):
         # TODO this needs menuitem fails
         menucolumns = 'MenuItemId', 'Name', 'Price', 'Description'
+        values = [
+            # test name not null
+            ((0, 'name', 10, 'desc'), None),
+        ]
+        self.run_multiple_inserts('MenuItem', menucolumns, values)
+        columns = 'MenuItemId',
+        values = [
+            ((0,), None),
+            ((0,), Exception),
+        ]
+        self.run_multiple_inserts('Main', columns, values)
+        return
+        values = [
+            ((1,), None),
+            ((0,), Exception),
+            ((1,), Exception),
+        ]
+        self.run_multiple_inserts('Side', columns, values)
+        values = [
+            ((2,), None),
+            ((0,), Exception),
+            ((1,), Exception),
+            ((2,), Exception),
+        ]
+        self.run_multiple_inserts('Side', columns, values)
+        return
         values = [
             # test name not null
             ((0, None, 10, 'desc'), NotNullViolation),
