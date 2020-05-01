@@ -82,6 +82,12 @@ class Test_db_constraints:
         except Exception:
             raise
 
+    def rollback(self):
+        try:
+            self.connection.rollback()
+        except:
+            raise
+
     def dbquery(self,
                 sql: str,
                 args: Sequence[str] = None,
@@ -117,11 +123,7 @@ class Test_db_constraints:
         return rv
 
     def run_multiple_inserts(self, table, columns, value_error_pairs, commits=True):
-        for package in value_error_pairs:
-            if table is None:
-                table, vals, err = package
-            else:
-                vals, err = package
+        for vals, err in value_error_pairs:
             if err is None:
                 self.dbinsert(table, columns, vals)
             else:
@@ -137,7 +139,7 @@ class Test_db_constraints:
             self.dbinsert('menu', menucolumns, (0, 'description'))
             self.commit()
 
-    def test_menuitem_insert(self):
+    def test_menuitem_heirarchy(self):
         menuitemcols = 'MenuItemId', 'Name', 'Price', 'Description'
         types = 'Main', 'Side', 'Dessert'
 
@@ -196,66 +198,57 @@ class Test_db_constraints:
                 self.dbinsert(t, None, (i,))
                 self.commit()  # TODO this should fail at insert not at commit.
         # database is the same as previous output
+        # cant delete the type when menuitem exists
+        for t, i in zip(types, (0, 2, 4)):
+            with pytest.raises(Exception):
+                self.dbexec('''
+                DELETE FROM {t} WHERE menuItemId = %s
+                ''', (i,), msg=f'remove row ({i},) from {t}')
 
-        self.dbget_table('MenuItem')
-        columns = 'MenuItemId',
-        values = [
-            ((0,), None),
-            ((1,), Exception),
-        ]
-        self.run_multiple_inserts('Main', columns, values, commit=False)
-        with pytest.raises(Exception):
-            self.commit()
-        return
-        values = [
-            ((1,), None),
-            ((0,), Exception),
-            ((1,), Exception),
-        ]
-        self.run_multiple_inserts('Side', columns, values)
-        values = [
-            ((2,), None),
-            ((0,), Exception),
-            ((1,), Exception),
-            ((2,), Exception),
-        ]
-        self.run_multiple_inserts('Side', columns, values)
-        values = [
-            # test name not null
-            ((0, None, 10, 'desc'), NotNullViolation),
-            # test name and price not unique
-            ((0, 'name', 10, 'desc'), None),
-            ((1, 'name', 10, 'desc'), None),
-            # test name length
-            ((3, 'a' * 30, 10, 'desc'), None),
-            ((4, 'a' * 400, 10, 'desc'), Exception),
+    def test_menuitem_insert(self):
+        mi_cols = 'MenuItemId', 'Name', 'Price', 'Description'
 
-            # test id not null
-            ((None, 'name', 10, 'desc'), NotNullViolation),
-            # test id is unique
-            ((3, 'name', 10, 'desc'), UniqueViolation),
+        def mi_insert(vals, err):
+            if err is not None:
+                with pytest.raises(err):
+                    self.dbinsert('MenuItem', mi_cols, vals)
+                self.commit()
+            else:
+                self.dbinsert('MenuItem', mi_cols, vals)
 
-            # test price not null
-            ((5, 'name', None, 'desc'), NotNullViolation),
-            # test price is number
-            ((5, 'name', 'abc', 'desc'), Exception),
-            # test price cant have .001 cents
-            ((5, 'name', 10.001, 'desc'), None),
-            # test price can have cents
-            # ((5, 'name', 10.30, 'desc'), Exception),
+        # test name not null
+        mi_insert((0, None, 10, 'desc'), NotNullViolation)
+        self.rollback()
+        # test name length
+        mi_insert((3, 'a' * 20, 10, 'desc'), None)
+        self.dbinsert('Main', None, (3,))
+        self.commit()
+        mi_insert((4, 'a' * 400, 10, 'desc'), Exception),
+        self.rollback()
 
-            # test description can be null
-            ((6, 'name', 10, 'desc'), None),
+        # test id not null
+        mi_insert((None, 'name', 10, 'desc'), NotNullViolation),
+        self.rollback()
+        # test id is unique
+        mi_insert((3, 'name', 10, 'desc'), UniqueViolation),
+        self.rollback()
 
-            # test isa is one of ('Main', 'Side', 'Dessert')
-            ((7, 'name', 10, 'desc'), None),
-            ((8, 'name', 10, 'desc'), None),
-            ((9, 'name', 10, 'desc'), None),
-            ((10, 'name', 10, 'desc'), Exception),
-            ((10, 'name', 10, 'desc'), Exception),
-            ((10, 'name', 10, 'desc'), Exception),
-            ((10, 'name', 10, 'desc'), Exception),
-        ]
+        # test price not null
+        mi_insert((5, 'name', None, 'desc'), NotNullViolation),
+        self.rollback()
+        # test price is number
+        mi_insert((5, 'name', 'abc', 'desc'), Exception),
+        self.rollback()
+        # test price cant have .001 cents
+        mi_insert((5, 'name', 10.001, 'desc'), None),
+        # test price can have cents
+        # ((5, 'name', 10.30, 'desc'), Exception),
+
+        # test description can be null
+        mi_insert((6, 'name', 10, 'desc'), None),
+        self.dbinsert('Main', None, (5,))
+        self.dbinsert('Main', None, (6,))
+        self.commit()
 
         # item 5 must not retain the extra decimal
         menuitems = self.dbget_table('MenuItem', columns=('menuItemId', 'price'))
