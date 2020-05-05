@@ -1,0 +1,19 @@
+* TODO Phone number datatype
+  Should this be CHAR(10)? If so, how do we check that a user does not input 'aaaaaaaaaa'
+* TODO Test Inserts [6/9]
+- [X] staff
+- [ ] menu
+- [X] menuitem
+- [ ] contains
+- [X] customer
+- [X] courier
+- [X] delivery
+- [X] order
+- [ ] orderitem
+
+* TODO Triggers []
+- [X] duplicates not allowed in Main, Side, nor Dessert tables
+- [X] insertion of rows into Main, Side, or Dessert blocked if menuItemId not in menuItem table
+- [X] cannot add menu that doesn't contain any items according to Contains table (deferred constraint trigger)
+- [X] each menuItemId in Main, Side, or Dessert cannot be in the other 2 tables (deferred constraint trigger)
+- [X] an instance of MenuItem can must be in exactly 1 of Main, Side, or Dessert (deferred constraint trigger)

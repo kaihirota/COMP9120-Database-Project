@@ -1,0 +1,6 @@
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/setup/theme-bigblow.setup
+* COMP9120 Group Assignment 2020
+  This is a group assignment for COMP9120. The participants (authors) are:
+  - [[https://github.com/Hixan][Alex Elias]]
+  - [[https://github.com/from81][Kai Hirota]]
+  - Jordan Clark
