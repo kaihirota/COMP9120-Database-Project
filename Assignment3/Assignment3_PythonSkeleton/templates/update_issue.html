@@ -1,0 +1,49 @@
+{% include 'top.html' %}
+
+<div class="content">
+    <div class="container">
+        <h1 class="title" align="center">Update Issue</h1>
+
+        <form class="newbooking pure-form pure-form-aligned" method="POST" action="{{url_for('update_issue')}}">
+            <div class="pure-control-group">
+                <label for="title"> Title:</label>
+				{% for e in issueInfo %}
+                <input type="text" name="title" value= "{{ e.title }}" required>
+				{% endfor %}
+            </div>
+			<div class="pure-control-group">
+                <label for="creator"> Creator:</label>
+				{% for e in issueInfo %}
+                <input type="text" name="creator" value="{{ e.creator }}" required>
+                {% endfor %}
+			</div>
+            <div class="pure-control-group">
+                <label for="resolver"> Resolver: </label>
+				{% for e in issueInfo %}
+                <input type="text" name="resolver" value="{{ e.resolver }}" required>
+                {% endfor %}				
+			</div>
+            <div class="pure-control-group">
+                <label for="verifier"> Verifier: </label>
+				{% for e in issueInfo %}
+                <input type="text" name="verifier" value="{{ e.verifier }}" required>
+                {% endfor %}
+			</div>
+            <div class="pure-control-group">
+                <label for="description"> Description: </label>
+				{% for e in issueInfo %}
+                <input type="text" name="description" value="{{ e.description }}" rows="50" required>
+                {% endfor %}
+            </div>
+			<div class="pure-control-group">
+                <label for="description"> Issue Id: </label>
+				{% for e in issueInfo %}
+                <input type="text" name="issue_id" value="{{ e.issue_id }}" rows="50" readonly required>
+                {% endfor %}
+            </div>
+            <button type="submit" class="flat">Update Issue</button>
+        </form>
+    </div>
+</div>
+
+{% include 'bottom.html' %}
