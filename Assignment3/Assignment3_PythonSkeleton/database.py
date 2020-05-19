@@ -4,15 +4,9 @@ import psycopg2
 import re
 from psycopg2 import sql
 
-#####################################################
-##  Database Connect
-#####################################################
 
-'''
-Connects to the database using the connection string
-'''
 def openConnection():
-# connection parameters - ENTER YOUR LOGIN AND PASSWORD HERE
+    # connection parameters - ENTER YOUR LOGIN AND PASSWORD HERE
     database = 'test'
     user = 'Kai'
     password = os.getenv('DBPW')
@@ -23,14 +17,15 @@ def openConnection():
     try:
         # Parses the config file and connects using the connect string
         conn = psycopg2.connect(database=database,
-                                    user=user,
-                                    password=password,
-                                    host=host)
+                                user=user,
+                                password=password,
+                                host=host)
     except psycopg2.Error as sqle:
         print("psycopg2.Error : " + sqle.pgerror)
 
     # return the connection to use
     return conn
+
 
 def checkUserCredentials(userName):
     '''
@@ -53,6 +48,7 @@ def checkUserCredentials(userName):
     conn.close()
 
     return userInfo
+
 
 def findUserIssues(user_id):
     '''
@@ -85,6 +81,7 @@ def findUserIssues(user_id):
 
     return issue
 
+
 def findIssueBasedOnExpressionSearchOnTitle(searchString):
     '''
     Find the associated issues for the user with the given userId (user_id) based on the searchString provided as the parameter, and based on the assignment description
@@ -92,7 +89,7 @@ def findIssueBasedOnExpressionSearchOnTitle(searchString):
     conn = openConnection()
     cursor = conn.cursor()
 
-    #TODO: this is case sensitive. leave it as is? or make it insensitive
+    # TODO: this is case sensitive. leave it as is? or make it insensitive
     query = """
         SELECT issue_id, title, creator, resolver, verifier, description
         FROM A3_ISSUE
@@ -119,9 +116,7 @@ def findIssueBasedOnExpressionSearchOnTitle(searchString):
 
     return issue
 
-#####################################################
-##  Issue (new_issue, get all, get details)
-#####################################################
+
 def addIssue(title, creator, resolver, verifier, description):
     """
     Insert a new issue to database
@@ -129,7 +124,7 @@ def addIssue(title, creator, resolver, verifier, description):
     returns:
         status: True if insert successful, else False
     """
-    #TODO: catch errors
+    # TODO: catch errors
 
     conn = openConnection()
     cursor = conn.cursor()
@@ -139,7 +134,8 @@ def addIssue(title, creator, resolver, verifier, description):
     """
 
     try:
-        cursor.execute(query, [title, creator, resolver, verifier, description])
+        cursor.execute(
+            query, [title, creator, resolver, verifier, description])
         status = True
 
     except:
@@ -153,6 +149,7 @@ def addIssue(title, creator, resolver, verifier, description):
         conn.close()
 
         return status
+
 
 def updateIssue(issue_id, title, creator, resolver, verifier, description):
     """
