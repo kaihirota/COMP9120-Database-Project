@@ -133,22 +133,20 @@ def addIssue(title, creator, resolver, verifier, description):
         INSERT INTO A3_ISSUE (title, creator, resolver, verifier, description) VALUES (%s, %s, %s, %s, %s)
     """
 
-    try:
-        cursor.execute(
-            query, [title, creator, resolver, verifier, description])
-        status = True
+    cursor.execute(query, [title, creator, resolver, verifier, description])
 
-    except:
+    if cursor.rowcount > 0:
+        status = True
+    else:
         status = False
 
-    finally:
-        if status == True:
-            conn.commit()
+    if status == True:
+        conn.commit()
 
-        cursor.close()
-        conn.close()
+    cursor.close()
+    conn.close()
 
-        return status
+    return status
 
 
 def updateIssue(issue_id, title, creator, resolver, verifier, description):
@@ -159,9 +157,34 @@ def updateIssue(issue_id, title, creator, resolver, verifier, description):
         status: True if update was successful, else False
     """
 
-    # return False if adding was unsuccessful
-    # return True if adding was successful
-    # return True
+    conn = openConnection()
+    cursor = conn.cursor()
+
+    query = """
+        UPDATE A3_ISSUE
+        SET title = %s,
+            creator = %s,
+            resolver = %s,
+            verifier = %s,
+            description = %s
+        WHERE issue_id = %s
+    """
+    data = [title, creator, resolver, verifier, description, issue_id]
+
+    cursor.execute(query, data)
+
+    if cursor.rowcount > 0:
+        status = True
+    else:
+        status = False
+
+    if status == True:
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return status
 
 
 title = 'Test title'
@@ -171,3 +194,12 @@ resolver = 3
 verifier = 4
 status = addIssue(title, creator, resolver, verifier, description)
 print(status)
+
+# issue_id = 300
+# title = 'updated title'
+# description = 'updated description',
+# creator = 3
+# resolver = 3
+# verifier = 4
+# status = updateIssue(issue_id, title, creator, resolver, verifier, description)
+# print(status)
