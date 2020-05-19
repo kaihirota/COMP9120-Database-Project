@@ -3,29 +3,29 @@ DROP TABLE IF EXISTS A3_USER;
 
 CREATE TABLE A3_USER
 (
-	USER_ID SERIAL primary key,
-	USERNAME VARCHAR(100) not null,
-	FIRSTNAME VARCHAR(100) not null, 
-	LASTNAME VARCHAR(100) not null
+	USER_ID SERIAL PRIMARY KEY,
+	USERNAME VARCHAR(100) NOT NULL,
+	FIRSTNAME VARCHAR(100) NOT NULL,
+	LASTNAME VARCHAR(100) NOT NULL
 );
 
-Insert into A3_USER (USERNAME,FIRSTNAME,LASTNAME) values ('-','not','assigned');			-- 1
-Insert into A3_USER (USERNAME,FIRSTNAME,LASTNAME) values ('Chris', 'Christopher','Smith');  -- 2
-Insert into A3_USER (USERNAME,FIRSTNAME,LASTNAME) values ('Dave', 'David','Jones');         -- 3
-Insert into A3_USER (USERNAME,FIRSTNAME,LASTNAME) values ('Vlad', 'Vladimir','Putin');      -- 4
+INSERT INTO A3_USER (USERNAME,FIRSTNAME,LASTNAME) VALUES ('-','not','assigned');			-- 1
+INSERT INTO A3_USER (USERNAME,FIRSTNAME,LASTNAME) VALUES ('Chris', 'Christopher','Smith');  -- 2
+INSERT INTO A3_USER (USERNAME,FIRSTNAME,LASTNAME) VALUES ('Dave', 'David','Jones');         -- 3
+INSERT INTO A3_USER (USERNAME,FIRSTNAME,LASTNAME) VALUES ('Vlad', 'Vladimir','Putin');      -- 4
 
-CREATE TABLE A3_ISSUE 
+CREATE TABLE A3_ISSUE
 (
-	ISSUE_ID SERIAL primary key,
-	TITLE VARCHAR(100),  
+	ISSUE_ID SERIAL PRIMARY KEY,
+	TITLE VARCHAR(100),
 	DESCRIPTION VARCHAR(1000),
-	CREATOR INTEGER not null REFERENCES A3_USER, 
-	RESOLVER INTEGER REFERENCES A3_USER, 
+	CREATOR INTEGER NOT NULL REFERENCES A3_USER,
+	RESOLVER INTEGER REFERENCES A3_USER,
 	VERIFIER INTEGER REFERENCES A3_USER
 );
 
-Insert into A3_ISSUE (TITLE,DESCRIPTION,CREATOR,RESOLVER,VERIFIER) values ('Factorial with addition anomaly','Performing a factorial and then addition produces an off by 1 error',2,3,4);
-Insert into A3_ISSUE (TITLE,DESCRIPTION,CREATOR,RESOLVER,VERIFIER) values ('Division by zero','Division by 0 doesn''t yield error or infinity as would be expected. Instead it results in -1.',2,3,1);
-Insert into A3_ISSUE (TITLE,DESCRIPTION,CREATOR,RESOLVER,VERIFIER) values ('Incorrect BODMAS order','Addition occurring before multiplication',3,1,1);
-
-commit;
+BEGIN;
+	INSERT INTO A3_ISSUE (TITLE,DESCRIPTION,CREATOR,RESOLVER,VERIFIER) VALUES ('Factorial with addition anomaly','Performing a factorial and then addition produces an off by 1 error',2,3,4);
+	INSERT INTO A3_ISSUE (TITLE,DESCRIPTION,CREATOR,RESOLVER,VERIFIER) VALUES ('Division by zero','Division by 0 doesn''t yield error or infinity as would be expected. Instead it results in -1.',2,3,1);
+	INSERT INTO A3_ISSUE (TITLE,DESCRIPTION,CREATOR,RESOLVER,VERIFIER) VALUES ('Incorrect BODMAS order','Addition occurring before multiplication',3,1,1);
+COMMIT;
