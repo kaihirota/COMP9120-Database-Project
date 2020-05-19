@@ -62,6 +62,7 @@ def findUserIssues(user_id):
         SELECT issue_id, title, creator, resolver, verifier, description
         FROM A3_ISSUE
         WHERE creator = %s
+        ORDER BY title
     """
 
     cursor.execute(query, (user_id,))
@@ -94,6 +95,7 @@ def findIssueBasedOnExpressionSearchOnTitle(searchString):
         SELECT issue_id, title, creator, resolver, verifier, description
         FROM A3_ISSUE
         WHERE title LIKE %s
+        ORDER BY title
     """
 
     if not re.search('^%.*%$', searchString):
@@ -187,13 +189,13 @@ def updateIssue(issue_id, title, creator, resolver, verifier, description):
     return status
 
 
-title = 'Test title'
-description = 'test description',
-creator = 3
-resolver = 3
-verifier = 4
-status = addIssue(title, creator, resolver, verifier, description)
-print(status)
+# title = 'Test title'
+# description = 'test description',
+# creator = 3
+# resolver = 3
+# verifier = 4
+# status = addIssue(title, creator, resolver, verifier, description)
+# print(status)
 
 # issue_id = 300
 # title = 'updated title'
