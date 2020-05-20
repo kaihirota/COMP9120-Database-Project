@@ -64,9 +64,7 @@ def findUserIssues(user_id):
         ORDER BY title
     """
 
-    issue_db_ret = cursor.execute(query, (user_id,))
-    if issue_db_ret is None:
-        return []  # no issues associated with this user
+    cursor.execute(query, (user_id,))
     issue_db = list(cursor.fetchall())
 
     issue = [{
