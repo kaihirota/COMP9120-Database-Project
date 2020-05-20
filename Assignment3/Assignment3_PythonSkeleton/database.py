@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import os
 import psycopg2
-import re
 from psycopg2 import sql
+import re
 
 
 def openConnection():
