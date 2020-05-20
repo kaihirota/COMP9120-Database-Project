@@ -66,8 +66,8 @@ def findUserIssues(user_id):
             , issue.description
         FROM A3_ISSUE AS issue
         JOIN A3_USER AS c ON issue.creator = c.user_id
-        JOIN A3_USER AS r ON issue.creator = r.user_id
-        JOIN A3_USER AS v ON issue.creator = v.user_id
+        JOIN A3_USER AS r ON issue.resolver = r.user_id
+        JOIN A3_USER AS v ON issue.verifier = v.user_id
         WHERE creator = %s OR resolver = %s OR verifier = %s
         ORDER BY issue.title
     """
@@ -198,13 +198,13 @@ def updateIssue(issue_id, title, creator, resolver, verifier, description):
     return status
 
 
-# title = 'Test title'
-# description = 'test description',
-# creator = 3
-# resolver = 3
-# verifier = 4
-# status = addIssue(title, creator, resolver, verifier, description)
-# print(status)
+title = 'Test title'
+description = 'test description',
+creator = 3
+resolver = None
+verifier = None
+status = addIssue(title, creator, resolver, verifier, description)
+print(status)
 
 # issue_id = 300
 # title = 'updated title'
