@@ -66,8 +66,8 @@ def findUserIssues(user_id):
             , issue.description
         FROM A3_ISSUE AS issue
         JOIN A3_USER AS c ON issue.creator = c.user_id
-        JOIN A3_USER AS r ON issue.resolver = r.user_id
-        JOIN A3_USER AS v ON issue.verifier = v.user_id
+        LEFT JOIN A3_USER AS r ON issue.resolver = r.user_id
+        LEFT JOIN A3_USER AS v ON issue.verifier = v.user_id
         WHERE creator = %s OR resolver = %s OR verifier = %s
         ORDER BY issue.title
     """
