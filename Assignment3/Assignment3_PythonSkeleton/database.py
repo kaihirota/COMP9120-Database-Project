@@ -12,7 +12,7 @@ def openConnection():
     password = os.getenv('DBPW')
     host = 'localhost'
 
-    # Create a connection to the database
+    # create a connection to the database
     conn = None
     try:
         # Parses the config file and connects using the connect string
@@ -42,7 +42,10 @@ def checkUserCredentials(userName):
         WHERE username = %s
     """
     cursor.execute(query, (userName,))
-    userInfo = list(cursor.fetchone())
+    userInfo = cursor.fetchone()
+    if userInfo is None:
+        return None
+    userInfo = list(userInfo)
 
     cursor.close()
     conn.close()
