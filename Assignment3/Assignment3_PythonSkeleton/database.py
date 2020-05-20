@@ -58,18 +58,21 @@ def findUserIssues(user_id):
     cursor = conn.cursor()
 
     query = """
-        SELECT
-            issue_id, title, c.username as creator, r.username as resolver,
-            v.username as verifier, description
-        FROM A3_ISSUE as a
-            JOIN A3_User as c ON a.creator = c.user_id
-            JOIN A3_User as r ON a.resolver = r.user_id
-            JOIN A3_User as v ON a.verifier = v.user_id
-        WHERE creator = %s
-        ORDER BY title
+        SELECT issue.issue_id
+            , issue.title
+            , c.username AS creator
+            , r.username AS resolver
+            , v.username AS verifier
+            , issue.description
+        FROM A3_ISSUE AS issue
+        JOIN A3_USER AS c ON issue.creator = c.user_id
+        JOIN A3_USER AS r ON issue.creator = r.user_id
+        JOIN A3_USER AS v ON issue.creator = v.user_id
+        WHERE creator = %s OR resolver = %s OR verifier = %s
+        ORDER BY issue.title
     """
 
-    cursor.execute(query, (user_id,))
+    cursor.execute(query, [user_id] * 3)
     issue_db = list(cursor.fetchall())
 
     issue = [{
