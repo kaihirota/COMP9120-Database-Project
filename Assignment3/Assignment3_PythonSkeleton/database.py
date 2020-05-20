@@ -84,7 +84,9 @@ def findUserIssues(user_id):
 
 def findIssueBasedOnExpressionSearchOnTitle(searchString):
     '''
-    Find the associated issues for the user with the given userId (user_id) based on the searchString provided as the parameter, and based on the assignment description
+    Find the associated issues for the user with the given userId (user_id)
+    based on the searchString provided as the parameter, and based on the
+    assignment description
     '''
     conn = openConnection()
     cursor = conn.cursor()
