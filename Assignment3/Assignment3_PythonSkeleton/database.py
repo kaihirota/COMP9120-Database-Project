@@ -3,23 +3,19 @@ import os
 import psycopg2
 from psycopg2 import sql
 import re
+import json
 
 
 def openConnection():
     # connection parameters - ENTER YOUR LOGIN AND PASSWORD HERE
-    database = 'test'
-    user = 'Kai'
-    password = os.getenv('DBPW')
-    host = 'localhost'
+    with open('nogit_credentials.json') as f:
+        creds = json.load(f)
 
     # create a connection to the database
     conn = None
     try:
         # Parses the config file and connects using the connect string
-        conn = psycopg2.connect(database=database,
-                                user=user,
-                                password=password,
-                                host=host)
+        conn = psycopg2.connect(**creds)
     except psycopg2.Error as sqle:
         print("psycopg2.Error : " + sqle.pgerror)
 
