@@ -58,8 +58,13 @@ def findUserIssues(user_id):
     cursor = conn.cursor()
 
     query = """
-        SELECT issue_id, title, creator, resolver, verifier, description
-        FROM A3_ISSUE
+        SELECT
+            issue_id, title, c.username as creator, r.username as resolver,
+            v.username as verifier, description
+        FROM A3_ISSUE as a
+            JOIN A3_User as c ON a.creator = c.user_id
+            JOIN A3_User as r ON a.resolver = r.user_id
+            JOIN A3_User as v ON a.verifier = v.user_id
         WHERE creator = %s
         ORDER BY title
     """
