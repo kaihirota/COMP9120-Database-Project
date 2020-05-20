@@ -152,6 +152,7 @@ def addIssue(title, creator, resolver, verifier, description):
         status = False
 
     if status == True:
+        # cursor.callproc('checkIssues')
         conn.commit()
 
     cursor.close()

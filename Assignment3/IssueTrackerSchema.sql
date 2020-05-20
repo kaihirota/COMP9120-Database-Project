@@ -30,17 +30,17 @@ BEGIN;
 	INSERT INTO A3_ISSUE (TITLE,DESCRIPTION,CREATOR,RESOLVER,VERIFIER) VALUES ('Incorrect BODMAS order','Addition occurring before multiplication',3,1,1);
 COMMIT;
 
--- update issues with no resolver or verifier assigned
-CREATE OR REPLACE FUNCTION checkIssues()
-  RETURNS TRIGGER AS $checkIssues$
-BEGIN
-    UPDATE A3_ISSUE
-	SET resolver = '-'
-	WHERE resolver IS NULL;
-
-	UPDATE A3_ISSUE
-	SET verifier = '-'
-	WHERE verifier IS NULL;
-	RETURN NULL;
-END;
-$checkIssues$ LANGUAGE plpgsql;
+-- -- update issues with no resolver or verifier assigned
+-- CREATE OR REPLACE FUNCTION checkIssues()
+--   RETURNS TRIGGER AS $checkIssues$
+-- BEGIN
+--     UPDATE A3_ISSUE
+-- 	SET resolver = '-'
+-- 	WHERE resolver IS NULL;
+--
+-- 	UPDATE A3_ISSUE
+-- 	SET verifier = '-'
+-- 	WHERE verifier IS NULL;
+-- 	RETURN NULL;
+-- END;
+-- $checkIssues$ LANGUAGE plpgsql;
