@@ -8,7 +8,7 @@ import json
 
 def openConnection():
     # connection parameters - ENTER YOUR LOGIN AND PASSWORD HERE
-    with open('db_credentials.json') as f:
+    with open('credentials.json') as f:
         creds = json.load(f)
 
     # create a connection to the database
