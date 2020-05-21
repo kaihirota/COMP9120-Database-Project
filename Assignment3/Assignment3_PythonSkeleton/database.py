@@ -30,20 +30,18 @@ def checkUserCredentials(userName):
     '''
 
     conn = openConnection()
-    cursor = conn.cursor()
+    with conn.cursor() as cursor:
+        query = """
+            SELECT user_id, username, firstname, lastname
+            FROM A3_USER
+            WHERE username = %s
+        """
+        cursor.execute(query, (userName,))
+        userInfo = cursor.fetchone()
+        if userInfo is None:
+            return None
+        userInfo = list(userInfo)
 
-    query = """
-        SELECT user_id, username, firstname, lastname
-        FROM A3_USER
-        WHERE username = %s
-    """
-    cursor.execute(query, (userName,))
-    userInfo = cursor.fetchone()
-    if userInfo is None:
-        return None
-    userInfo = list(userInfo)
-
-    cursor.close()
     conn.close()
 
     return userInfo
@@ -55,36 +53,35 @@ def findUserIssues(user_id):
     See assignment description for how to load user associated issues based on the user id (user_id)
     '''
     conn = openConnection()
-    cursor = conn.cursor()
+    with conn.cursor() as cursor:
 
-    query = """
-        SELECT issue.issue_id
-            , issue.title
-            , c.username AS creator
-            , r.username AS resolver
-            , v.username AS verifier
-            , issue.description
-        FROM A3_ISSUE AS issue
-        JOIN A3_USER AS c ON issue.creator = c.user_id
-        LEFT JOIN A3_USER AS r ON issue.resolver = r.user_id
-        LEFT JOIN A3_USER AS v ON issue.verifier = v.user_id
-        WHERE %s in (creator, resolver, verifier)
-        ORDER BY issue.title
-    """
+        query = """
+            SELECT issue.issue_id
+                , issue.title
+                , c.username AS creator
+                , r.username AS resolver
+                , v.username AS verifier
+                , issue.description
+            FROM A3_ISSUE AS issue
+            JOIN A3_USER AS c ON issue.creator = c.user_id
+            LEFT JOIN A3_USER AS r ON issue.resolver = r.user_id
+            LEFT JOIN A3_USER AS v ON issue.verifier = v.user_id
+            WHERE %s in (creator, resolver, verifier)
+            ORDER BY issue.title
+        """
 
-    cursor.execute(query, (user_id,))
-    issue_db = list(cursor.fetchall())
+        cursor.execute(query, (user_id,))
+        issue_db = list(cursor.fetchall())
 
-    issue = [{
-        'issue_id': row[0],
-        'title': row[1],
-        'creator': row[2],
-        'resolver': row[3],
-        'verifier': row[4],
-        'description': row[5]
-    } for row in issue_db]
+        issue = [{
+            'issue_id': row[0],
+            'title': row[1],
+            'creator': row[2],
+            'resolver': row[3],
+            'verifier': row[4],
+            'description': row[5]
+        } for row in issue_db]
 
-    cursor.close()
     conn.close()
 
     return issue
@@ -97,32 +94,30 @@ def findIssueBasedOnExpressionSearchOnTitle(searchString):
     assignment description
     '''
     conn = openConnection()
-    cursor = conn.cursor()
+    with conn.cursor() as cursor:
 
-    # TODO: this is case sensitive. leave it as is? or make it insensitive
-    query = """
-        SELECT issue_id, title, creator, resolver, verifier, description
-        FROM A3_ISSUE
-        WHERE title LIKE %s
-        ORDER BY title
-    """
+        query = """
+            SELECT issue_id, title, creator, resolver, verifier, description
+            FROM A3_ISSUE
+            WHERE title LIKE %s
+            ORDER BY title
+        """
 
-    if not re.search('^%.*%$', searchString):
-        searchString = f'%{searchString}%'
+        if not re.search('^%.*%$', searchString):
+            searchString = f'%{searchString}%'
 
-    cursor.execute(query, (searchString,))
-    issue_db = list(cursor.fetchall())
+        cursor.execute(query, (searchString,))
+        issue_db = list(cursor.fetchall())
 
-    issue = [{
-        'issue_id': row[0],
-        'title': row[1],
-        'creator': row[2],
-        'resolver': row[3],
-        'verifier': row[4],
-        'description': row[5]
-    } for row in issue_db]
+        issue = [{
+            'issue_id': row[0],
+            'title': row[1],
+            'creator': row[2],
+            'resolver': row[3],
+            'verifier': row[4],
+            'description': row[5]
+        } for row in issue_db]
 
-    cursor.close()
     conn.close()
 
     return issue
@@ -135,31 +130,31 @@ def addIssue(title, creator, resolver, verifier, description):
     returns:
         status: True if insert successful, else False
     """
-    # TODO: catch errors
-
-    conn = openConnection()
-    cursor = conn.cursor()
 
     query = """
-        INSERT INTO A3_ISSUE (title, creator, resolver, verifier, description) VALUES (%s, get_uid(%s), get_uid(%s), get_uid(%s), %s)
+        INSERT INTO A3_ISSUE (title, creator, resolver, verifier, description)
+        VALUES (%s, get_uid(%s), get_uid(%s), get_uid(%s), %s)
     """
 
     status = True
 
-    try:
-        cursor.execute(query, [title, creator, resolver, verifier, description])
-    except psycopg2.errors.RaiseException:
-        status = False
+    conn = openConnection()
+    with conn.cursor() as cursor:
+
+        try:
+            cursor.execute(query,
+                           [title, creator, resolver, verifier, description])
+        except psycopg2.errors.RaiseException:
+            status = False
+
+        if not status or cursor.rowcount == 0:
+            status = False
+
+    if status is True:
+        conn.commit()
+    else:
         conn.rollback()
 
-    if not status or cursor.rowcount == 0:
-        status = False
-
-    if status == True:
-        # cursor.callproc('checkIssues')
-        conn.commit()
-
-    cursor.close()
     conn.close()
 
     return status
@@ -167,7 +162,8 @@ def addIssue(title, creator, resolver, verifier, description):
 
 def updateIssue(issue_id, title, creator, resolver, verifier, description):
     """
-    Update the details of an issue having the provided issue_id with the values provided as parameters
+    Update the details of an issue having the provided issue_id with the values
+    provided as parameters
 
     returns:
         status: True if update was successful, else False
