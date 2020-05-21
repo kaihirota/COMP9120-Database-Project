@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import os
+import re
 import psycopg2
 from psycopg2 import sql
-import re
 import json
 
 
@@ -99,12 +99,12 @@ def findIssueBasedOnExpressionSearchOnTitle(searchString):
         query = """
             SELECT issue_id, title, creator, resolver, verifier, description
             FROM A3_ISSUE
-            WHERE title LIKE %s
+            WHERE title LIKE %%%s%%
             ORDER BY title
         """
 
-        if not re.search('^%.*%$', searchString):
-            searchString = f'%{searchString}%'
+        # if not re.search('^%.*%$', searchString):
+        # searchString = f'%{searchString}%'
 
         cursor.execute(query, (searchString,))
         issue_db = list(cursor.fetchall())
@@ -197,20 +197,3 @@ def updateIssue(issue_id, title, creator, resolver, verifier, description):
     conn.close()
 
     return status
-
-# title = 'Test title'
-# description = 'test description',
-# creator = 3
-# resolver = None
-# verifier = None
-# status = addIssue(title, creator, resolver, verifier, description)
-# print(status)
-
-# issue_id = 300
-# title = 'updated title'
-# description = 'updated description',
-# creator = 3
-# resolver = 3
-# verifier = 4
-# status = updateIssue(issue_id, title, creator, resolver, verifier, description)
-# print(status)

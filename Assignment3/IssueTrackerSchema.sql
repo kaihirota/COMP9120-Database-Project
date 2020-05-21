@@ -30,21 +30,6 @@ BEGIN;
 	INSERT INTO A3_ISSUE (TITLE,DESCRIPTION,CREATOR,RESOLVER,VERIFIER) VALUES ('Incorrect BODMAS order','Addition occurring before multiplication',3,1,1);
 COMMIT;
 
--- -- update issues with no resolver or verifier assigned
--- CREATE OR REPLACE FUNCTION checkIssues()
---   RETURNS TRIGGER AS $checkIssues$
--- BEGIN
---     UPDATE A3_ISSUE
--- 	SET resolver = 1
--- 	WHERE resolver IS NULL;
---
--- 	UPDATE A3_ISSUE
--- 	SET verifier = 1
--- 	WHERE verifier IS NULL;
--- 	RETURN NULL;
--- END;
--- $checkIssues$ LANGUAGE plpgsql;
-
 -- convert a username to its userid for insertions
 CREATE OR REPLACE FUNCTION get_uid(required_username VARCHAR(100))
   RETURNS INTEGER AS $$
@@ -57,4 +42,3 @@ BEGIN
   return rval;
 END;
 $$ LANGUAGE plpgsql;
-
