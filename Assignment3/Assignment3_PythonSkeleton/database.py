@@ -94,16 +94,30 @@ def findIssueBasedOnExpressionSearchOnTitle(searchString):
     with conn.cursor() as cursor:
 
         query = """
-            SELECT issue_id, title, creator, resolver, verifier, description
-            FROM A3_ISSUE
+            SELECT issue.issue_id AS issue_id
+                , issue.title AS title
+                , c.username AS creator
+                , r.username AS resolver
+                , v.username AS verifier
+                , issue.description AS description
+            FROM A3_ISSUE AS issue
+            JOIN A3_USER AS c ON issue.creator = c.user_id
+            LEFT JOIN A3_USER AS r ON issue.resolver = r.user_id
+            LEFT JOIN A3_USER AS v ON issue.verifier = v.user_id
             WHERE title LIKE %s
+            -- AND %%s in (issue.creator, issue.resolver, issue.verifier)
+            -- this is where we would check that the issue is related to the
+            -- user. (the %% would be only one percent sign - it needs to be
+            -- escaped as otherwise psycopg2 would try to insert an extra
+            -- argument (that doesnt exist))
             ORDER BY title
         """
 
         # if not re.search('^%.*%$', searchString):
         searchString = f'%{searchString}%'
 
-        cursor.execute(query, (searchString,))
+        # this is where we would pass the user_id to ensure it is related to this user.
+        cursor.execute(query, (searchString,))  # user_id))
         issue_db = list(cursor.fetchall())
 
         issue = [{
