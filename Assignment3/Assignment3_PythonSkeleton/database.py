@@ -156,7 +156,6 @@ def addIssue(title, creator, resolver, verifier, description):
         status = False
 
     if status == True:
-        # cursor.callproc('checkIssues')
         conn.commit()
 
     cursor.close()
@@ -201,20 +200,3 @@ def updateIssue(issue_id, title, creator, resolver, verifier, description):
     conn.close()
 
     return status
-
-# title = 'Test title'
-# description = 'test description',
-# creator = 3
-# resolver = None
-# verifier = None
-# status = addIssue(title, creator, resolver, verifier, description)
-# print(status)
-
-# issue_id = 300
-# title = 'updated title'
-# description = 'updated description',
-# creator = 3
-# resolver = 3
-# verifier = 4
-# status = updateIssue(issue_id, title, creator, resolver, verifier, description)
-# print(status)
