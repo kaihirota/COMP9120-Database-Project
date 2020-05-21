@@ -41,7 +41,7 @@ DECLARE
 BEGIN
 	IF uname NOT IN (
 		SELECT username FROM A3_USER
-	) THEN uid = 1;
+	) THEN RAISE EXCEPTION 'User does not exist';
 	ELSE
 		SELECT users.user_id INTO uid
 		FROM A3_USER AS users
