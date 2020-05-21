@@ -171,7 +171,7 @@ def addIssue(title, creator, resolver, verifier, description):
     return status
 
 
-def updateIssue(issue_id, title, creator, resolver, verifier, description):
+def updateIssue(title, creator, resolver, verifier, description, issue_id):
     """
     Update the details of an issue having the provided issue_id with the values
     provided as parameters
@@ -180,31 +180,33 @@ def updateIssue(issue_id, title, creator, resolver, verifier, description):
         status: True if update was successful, else False
     """
 
-    conn = openConnection()
-    cursor = conn.cursor()
-
     query = """
         UPDATE A3_ISSUE
         SET title = %s,
-            creator = %s,
-            resolver = %s,
-            verifier = %s,
+            creator = get_uid(%s),
+            resolver = get_uid(%s),
+            verifier = get_uid(%s),
             description = %s
         WHERE issue_id = %s
     """
     data = [title, creator, resolver, verifier, description, issue_id]
 
-    cursor.execute(query, data)
+    conn = openConnection()
 
-    if cursor.rowcount > 0:
-        status = True
-    else:
-        status = False
+    status = True
+    with conn.cursor() as cursor:
 
-    if status == True:
-        conn.commit()
+        try:
+            cursor.execute(query, data)
+        except:
+            conn.rollback()
+            return False
 
-    cursor.close()
+        if cursor.rowcount == 0:
+            conn.rollback()
+            return False
+
+    conn.commit()
     conn.close()
 
-    return status
+    return True
