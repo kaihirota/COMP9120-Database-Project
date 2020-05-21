@@ -30,17 +30,22 @@ BEGIN;
 	INSERT INTO A3_ISSUE (TITLE,DESCRIPTION,CREATOR,RESOLVER,VERIFIER) VALUES ('Incorrect BODMAS order','Addition occurring before multiplication',3,1,1);
 COMMIT;
 
--- -- update issues with no resolver or verifier assigned
--- CREATE OR REPLACE FUNCTION checkIssues()
---   RETURNS TRIGGER AS $checkIssues$
--- BEGIN
---     UPDATE A3_ISSUE
--- 	SET resolver = 1
--- 	WHERE resolver IS NULL;
---
--- 	UPDATE A3_ISSUE
--- 	SET verifier = 1
--- 	WHERE verifier IS NULL;
--- 	RETURN NULL;
--- END;
--- $checkIssues$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION username_to_id (IN uname VARCHAR, OUT userid INT)
+-- AS 'SELECT user_id FROM A3_USER WHERE username = uname'
+-- LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION username_to_id (IN uname VARCHAR, uid INT)
+RETURNS INT AS $$
+DECLARE
+	uid INT;
+BEGIN
+	IF uname NOT IN (
+		SELECT username FROM A3_USER
+	) THEN uid = 1;
+	ELSE
+		SELECT users.user_id INTO uid
+		FROM A3_USER AS users
+		WHERE users.username = uname;
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
