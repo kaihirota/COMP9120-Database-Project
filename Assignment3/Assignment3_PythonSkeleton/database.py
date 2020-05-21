@@ -141,14 +141,18 @@ def addIssue(title, creator, resolver, verifier, description):
     cursor = conn.cursor()
 
     query = """
-        INSERT INTO A3_ISSUE (title, creator, resolver, verifier, description) VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO A3_ISSUE (title, creator, resolver, verifier, description) VALUES (%s, get_uid(%s), get_uid(%s), get_uid(%s), %s)
     """
 
-    cursor.execute(query, [title, creator, resolver, verifier, description])
+    status = True
 
-    if cursor.rowcount > 0:
-        status = True
-    else:
+    try:
+        cursor.execute(query, [title, creator, resolver, verifier, description])
+    except psycopg2.errors.RaiseException:
+        status = False
+        conn.rollback()
+
+    if not status or cursor.rowcount == 0:
         status = False
 
     if status == True:

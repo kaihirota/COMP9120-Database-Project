@@ -44,3 +44,20 @@ COMMIT;
 -- 	RETURN NULL;
 -- END;
 -- $checkIssues$ LANGUAGE plpgsql;
+
+-- convert a username to its userid for insertions
+CREATE OR REPLACE FUNCTION get_uid(required_username VARCHAR(100))
+  RETURNS INTEGER AS $$
+  DECLARE
+  rval INTEGER;
+BEGIN
+  SELECT user_id INTO rval FROM A3_USER WHERE username = required_username LIMIT 1;
+  IF rval is NULL THEN RAISE EXCEPTION 'Non existent user';
+  END IF;
+  return rval;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
