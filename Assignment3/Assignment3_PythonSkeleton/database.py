@@ -198,14 +198,13 @@ def updateIssue(issue_id, title, creator, resolver, verifier, description):
 
     return status
 
-
-title = 'Test title'
-description = 'test description',
-creator = 3
-resolver = None
-verifier = None
-status = addIssue(title, creator, resolver, verifier, description)
-print(status)
+# title = 'Test title'
+# description = 'test description',
+# creator = 3
+# resolver = None
+# verifier = None
+# status = addIssue(title, creator, resolver, verifier, description)
+# print(status)
 
 # issue_id = 300
 # title = 'updated title'

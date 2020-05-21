@@ -35,11 +35,11 @@ COMMIT;
 --   RETURNS TRIGGER AS $checkIssues$
 -- BEGIN
 --     UPDATE A3_ISSUE
--- 	SET resolver = '-'
+-- 	SET resolver = 1
 -- 	WHERE resolver IS NULL;
 --
 -- 	UPDATE A3_ISSUE
--- 	SET verifier = '-'
+-- 	SET verifier = 1
 -- 	WHERE verifier IS NULL;
 -- 	RETURN NULL;
 -- END;
