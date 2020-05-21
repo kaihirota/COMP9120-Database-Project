@@ -52,12 +52,9 @@ CREATE OR REPLACE FUNCTION get_uid(required_username VARCHAR(100))
   rval INTEGER;
 BEGIN
   SELECT user_id INTO rval FROM A3_USER WHERE username = required_username LIMIT 1;
-  IF rval is NULL THEN RAISE EXCEPTION 'Non existent user';
+  IF rval is NULL THEN RAISE EXCEPTION 'User does not exist';
   END IF;
   return rval;
 END;
 $$ LANGUAGE plpgsql;
-
-
-
 
