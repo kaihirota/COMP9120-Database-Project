@@ -71,7 +71,7 @@ def findUserIssues(user_id):
         issue_db = list(cursor.fetchall())
 
         issue = [{
-            'issue_id': int(row[0]),
+            'issue_id': str(row[0]),
             'title': row[1],
             'creator': row[2],
             'resolver': row[3],
@@ -121,7 +121,7 @@ def findIssueBasedOnExpressionSearchOnTitle(searchString):
         issue_db = list(cursor.fetchall())
 
         issue = [{
-            'issue_id': int(row[0]),
+            'issue_id': str(row[0]),
             'title': row[1],
             'creator': row[2],
             'resolver': row[3],
