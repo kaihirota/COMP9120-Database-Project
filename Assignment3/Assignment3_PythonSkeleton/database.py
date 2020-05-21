@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-import os
-import re
 import psycopg2
-from psycopg2 import sql
 import json
 
 
@@ -99,12 +96,12 @@ def findIssueBasedOnExpressionSearchOnTitle(searchString):
         query = """
             SELECT issue_id, title, creator, resolver, verifier, description
             FROM A3_ISSUE
-            WHERE title LIKE %%%s%%
+            WHERE title LIKE %s
             ORDER BY title
         """
 
         # if not re.search('^%.*%$', searchString):
-        # searchString = f'%{searchString}%'
+        searchString = f'%{searchString}%'
 
         cursor.execute(query, (searchString,))
         issue_db = list(cursor.fetchall())
