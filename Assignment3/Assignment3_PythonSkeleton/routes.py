@@ -170,8 +170,9 @@ def update_issue():
     else:
         page['bar'] = False
         flash("There was an error updating the issue.")
-        return(redirect(url_for('update_issue')))
-    
+        # return(redirect(url_for('update_issue')))
+        return redirect(f"?issue_id={request.form['issue_id']}")
+
 def get_issue(issue_id, user_id):
     print('routes.getIssue')
     for issue in database.findUserIssues(user_id):
