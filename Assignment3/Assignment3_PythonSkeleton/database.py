@@ -23,7 +23,8 @@ def openConnection():
 def checkUserCredentials(userName):
     '''
     List all the user associated issues in the database for a given user
-    See assignment description for how to load user associated issues based on the user id (user_id)
+    See assignment description for how to load user associated issues based on
+    the user id (user_id)
     '''
 
     conn = openConnection()
@@ -47,7 +48,8 @@ def checkUserCredentials(userName):
 def findUserIssues(user_id):
     '''
     List all the user associated issues in the database for a given user
-    See assignment description for how to load user associated issues based on the user id (user_id)
+    See assignment description for how to load user associated issues based on
+    the user id (user_id)
     '''
     conn = openConnection()
     with conn.cursor() as cursor:
@@ -116,7 +118,8 @@ def findIssueBasedOnExpressionSearchOnTitle(searchString):
         # if not re.search('^%.*%$', searchString):
         searchString = f'%{searchString}%'
 
-        # this is where we would pass the user_id to ensure it is related to this user.
+        # this is where we would pass the user_id to ensure it is related to
+        # this user.
         cursor.execute(query, (searchString,))  # user_id))
         issue_db = list(cursor.fetchall())
 
@@ -193,12 +196,11 @@ def updateIssue(title, creator, resolver, verifier, description, issue_id):
 
     conn = openConnection()
 
-    status = True
     with conn.cursor() as cursor:
 
         try:
             cursor.execute(query, data)
-        except:
+        except psycopg2.Error:
             conn.rollback()
             return False
 
