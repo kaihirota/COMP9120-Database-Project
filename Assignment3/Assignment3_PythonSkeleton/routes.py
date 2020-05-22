@@ -22,7 +22,7 @@ def index():
     if('logged_in' not in session or not session['logged_in']):
         return redirect(url_for('login'))
     page['title'] = 'IssueTracker'
-    
+
     return redirect(url_for('list_issue'))
 
     #return render_template('index.html',
@@ -94,7 +94,7 @@ def list_issue():
         search_term = request.form['search']
         if (search_term == ''):
             issue_list_find = database.findUserIssues(user_details['user_id'])
-        else:    
+        else:
             issue_list_find = database.findIssueBasedOnExpressionSearchOnTitle(search_term)
         if(issue_list_find is None):
             issue_list_find = []
@@ -170,8 +170,9 @@ def update_issue():
     else:
         page['bar'] = False
         flash("There was an error updating the issue.")
-        return(redirect(url_for('update_issue')))
-    
+        # return(redirect(url_for('update_issue')))
+        return redirect(f"?issue_id={request.form['issue_id']}")
+
 def get_issue(issue_id, user_id):
     print('routes.getIssue')
     for issue in database.findUserIssues(user_id):
@@ -179,7 +180,7 @@ def get_issue(issue_id, user_id):
         #print(issue_id)
         if issue['issue_id'] == issue_id:
             return [issue]
-    return None	
+    return None
 
 def check_login(user_name):
     print('routes.check_login')

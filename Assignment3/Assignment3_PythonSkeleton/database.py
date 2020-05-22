@@ -182,11 +182,11 @@ def updateIssue(title, creator, resolver, verifier, description, issue_id):
 
     query = """
         UPDATE A3_ISSUE
-        SET title = %s,
-            creator = get_uid(%s),
-            resolver = get_uid(%s),
-            verifier = get_uid(%s),
-            description = %s
+        SET title = %s
+            , creator = get_uid(%s)
+            , resolver = get_uid(%s)
+            , verifier = get_uid(%s)
+            , description = %s
         WHERE issue_id = %s
     """
     data = [title, creator, resolver, verifier, description, issue_id]
